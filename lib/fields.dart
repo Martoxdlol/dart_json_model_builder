@@ -119,6 +119,31 @@ class BoolField extends Field<bool> {
 }
 
 /// Model field for native `bool` type
+class DateTimeField extends Field<DateTime> {
+  DateTimeField(super.name, {required super.parent, required super.nullable});
+
+  @override
+  bool setFromJson(json) {
+    _loaded = false;
+    int? ms;
+    if (json is DateTime) set(json);
+    if (json is int) ms = json;
+    if (json is double) ms = json.toInt();
+    if (ms != null) {
+      final datetime = DateTime.fromMillisecondsSinceEpoch(ms);
+      set(datetime);
+    } else if (json is String) {
+      final datetime = DateTime.tryParse(json);
+      if (datetime != null) set(datetime);
+    }
+    return isLoaded;
+  }
+
+  @override
+  JSONTYPE toJson() => value;
+}
+
+/// Model field for native `dynamic` type
 class DynamicField extends Field<dynamic> {
   DynamicField(super.name, {required super.parent, required super.nullable});
 
@@ -139,6 +164,7 @@ class DynamicField extends Field<dynamic> {
     if (json is double) _internalField = DoubleField(name, parent: parent, nullable: nullable);
     if (json is String) _internalField = StringField(name, parent: parent, nullable: nullable);
     if (json is bool) _internalField = BoolField(name, parent: parent, nullable: nullable);
+    if (json is DateTime) _internalField = DateTimeField(name, parent: parent, nullable: nullable);
     if (json is List) _internalField = ModelField<ModelList>(name, parent: parent, nullable: nullable);
     if (json is Map) _internalField = ModelField<ModelMap>(name, parent: parent, nullable: nullable);
     if (json is Model) {
@@ -169,7 +195,7 @@ class DynamicField extends Field<dynamic> {
   @override
   JSONTYPE toJson() => value;
 
-  Field get fixedType => _internalField ?? this; 
+  Field get fixedType => _internalField ?? this;
 }
 
 /// Model field for native `bool` type
@@ -179,8 +205,8 @@ class ModelField<T> extends Field<Model> {
   ModelField(super.name, {required super.parent, required super.nullable}) {
     if (T == ModelList) _isList = true;
     if (T == ModelMap) _isMap = true;
-    if (Model.modelsNameByType[T] == null) {
-      throw Exception("Type <T> must be a Registered Model or `ModelMap` or `ModelList`");
+    if (!Model.isRegistering && Model.modelsNameByType[T] == null) {
+      throw Exception("Type <T> must be a Registered Model or `ModelMap` or `ModelList`. If using custom `Model` subclass, use Model.register('your_model', (json) => YourModel(json)).");
     }
   }
 
