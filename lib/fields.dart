@@ -17,7 +17,11 @@ abstract class Field<T> {
   final FieldOptions options;
   final Model parent;
 
+  // Field name
   String get name => parent.nameOfField(this);
+
+  // Field type (ex: String, ex: Model, ex: ModelMap)
+  Type get type => T;
 
   /// Convert and set any json to `T`
   /// It doesn't crash if passed incorrect data type value
@@ -152,6 +156,9 @@ class DynamicField extends Field<dynamic> {
   Model? _modelValue;
 
   @override
+  Type get type => _modelValue != null ? Model : (_internalField?.type ?? dynamic);
+
+  @override
   get value => _modelValue ?? _internalField?.value;
 
   @override
@@ -194,7 +201,7 @@ class DynamicField extends Field<dynamic> {
   }
 
   @override
-  JSONTYPE toJson() => value;
+  JSONTYPE toJson() => _modelValue != null ? _modelValue!.toJson() : _internalField?.toJson();
 
   Field get fixedType => _internalField ?? this;
 }

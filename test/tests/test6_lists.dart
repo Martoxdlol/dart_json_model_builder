@@ -69,4 +69,44 @@ void test6() {
 
     testCart(cart);
   });
+
+  test('list with dynamic fields', () {
+    final cart = ShoppingCart({
+      'owner_name': 'Tomás',
+      'items': [
+        ShoppingItem({'name': 'sauce', 'id': 10}),
+        {'name': 'tomatoes', 'id': 20},
+        {'name': 'cheese', 'id': 30},
+      ]
+    });
+
+    final backpack = BackPack({
+      'generic': [1, 2, 3, 'four', cart]
+    });
+
+    final expectedJson = {
+      'named': null,
+      'generic': [
+        1,
+        2,
+        3,
+        'four',
+        {
+          'owner_name': 'Tomás',
+          'items': [
+            {'name': 'sauce', 'id': 10},
+            {'name': 'tomatoes', 'id': 20},
+            {'name': 'cheese', 'id': 30}
+          ]
+        }
+      ]
+    };
+
+    expect(backpack.generic.values![1]!.value, 2);
+    expect(backpack.generic.values![2]!.value, 3);
+    expect(backpack.generic.values![3]!.value, 'four');
+    testCart(backpack.generic.values![4]!.value);
+
+    expect(JsonDiffer.fromJson(expectedJson, backpack.toJson()).diff().hasChanged, false);
+  });
 }

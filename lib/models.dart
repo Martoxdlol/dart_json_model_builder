@@ -135,7 +135,7 @@ abstract class MapModelBasics implements Model {
     return map;
   }
 
-  operator [](String key) => get(key);
+  Field? operator [](String key) => get(key);
 }
 
 class ModelMap extends Model with MapModelBasics {

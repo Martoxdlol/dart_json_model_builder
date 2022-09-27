@@ -6,6 +6,7 @@ import 'tests/test2_structure.dart';
 import 'tests/test3_composed_model.dart';
 import 'tests/test5_check_fields_names.dart';
 import 'tests/test6_lists.dart';
+import 'tests/test7_maps.dart';
 
 void main() {
   Model.register('person', (json) => Person(json));
@@ -18,4 +19,5 @@ void main() {
   test3();
   test5();
   test6();
+  test7();
 }

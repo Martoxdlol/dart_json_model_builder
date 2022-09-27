@@ -42,3 +42,13 @@ class ShoppingCart extends ModelBuilder {
   StringField get owner => stringField('owner_name');
   ListField get items => listField('items', type: ShoppingItem);
 }
+
+class BackPack extends ModelBuilder {
+  BackPack(super.json);
+
+  @override
+  Iterable<Field> get fields => [named, generic];
+
+  MapField get named => mapField('named');
+  ListField get generic => listField('generic');
+}
