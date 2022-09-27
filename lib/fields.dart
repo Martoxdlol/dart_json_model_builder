@@ -166,11 +166,11 @@ class DynamicField extends Field<dynamic> {
     if (json is String) _internalField = StringField(parent: parent, options: options);
     if (json is bool) _internalField = BoolField(parent: parent, options: options);
     if (json is DateTime) _internalField = DateTimeField(parent: parent, options: options);
-    if (json is List) _internalField = ModelField<ModelList>(parent: parent, options: options);
-    if (json is Map) _internalField = ModelField<ModelMap>(parent: parent, options: options);
+    if (json is List) _internalField = ListField(parent: parent, options: options);
+    if (json is Map) _internalField = MapField(parent: parent, options: options);
     if (json is Model) {
-      if (json is ModelList) _internalField = ModelField<ModelList>(parent: parent, options: options);
-      if (json is ModelField) _internalField = ModelField<ModelMap>(parent: parent, options: options);
+      if (json is ModelList) _internalField = ListField(parent: parent, options: options);
+      if (json is ModelField) _internalField = MapField(parent: parent, options: options);
       if (_internalField == null) {
         _modelValue = json;
         return true;
@@ -203,37 +203,39 @@ class DynamicField extends Field<dynamic> {
 class ModelField<T> extends Field<Model> {
   bool _isMap = false;
   bool _isList = false;
-  ModelField({required super.parent, required super.options, Type? subType}) {
-    _subtype = subType;
+  ModelField({required super.parent, required super.options, this.useModelInstanciator}) {
     if (type == ModelList) _isList = true;
     if (type == ModelMap) _isMap = true;
     if (!_isList && !_isMap && !Model.isRegistering && Model.modelsNameByType[type] == null) {
       throw Exception(
-          "Type <T> must be a Registered Model or `ModelMap` or `ModelList`. If using custom `Model` subclass, use Model.register('your_model', (json) => YourModel(json)).");
+          "Type <T> (now: `$type`) must be a Registered Model or `ModelMap` or `ModelList`. If using custom `Model` subclass, use Model.register('your_model', (json) => YourModel(json)).");
     }
   }
 
-  late final Type? _subtype;
+  ModelInstanciator? useModelInstanciator;
 
-  Type get type => T;
+  Type get type => useModelInstanciator != null ? useModelInstanciator!.call({}).runtimeType : T;
   T? get values => super.value as T;
 
   @override
   bool setFromJson(json) {
     _loaded = false;
 
+    if (json.runtimeType == type) {
+      set(json);
+    } else if (useModelInstanciator != null) {
+      set(useModelInstanciator!.call(json));
+      return isLoaded;
+    }
+
     if (_isList) {
       set(ModelList(
         json,
-        type: _subtype,
       ));
     } else if (_isMap) {
       set(ModelMap(
         json,
-        type: _subtype,
       ));
-    } else if (json is Model && Model == type) {
-      set(json);
     } else if (json is Model) {
       final value = Model.createByType(type, json.toJson());
       if (value != null) set(value);
@@ -248,6 +250,9 @@ class ModelField<T> extends Field<Model> {
   @override
   JSONTYPE toJson() => value?.toJson();
 }
+
+typedef ListField = ModelField<ModelList>;
+typedef MapField = ModelField<ModelMap>;
 
 typedef FieldValueValidator<T> = bool Function(T value);
 

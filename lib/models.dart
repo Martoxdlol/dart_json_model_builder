@@ -48,16 +48,28 @@ class ModelList extends Model {
         if (fieldInstanciator != null) {
           _fields.add(fieldInstanciator(key, json));
         } else if (type != null && type != dynamic) {
-          _fields.add(ModelField(parent: this, options: FieldOptions.defaultOptions, subType: type));
+          if (Model.modelsNameByType[type] == null) {
+            throw Exception(
+                "Type <T> (now: `$type`) must be a Registered Model or `ModelMap` or `ModelList`. If using custom `Model` subclass, use Model.register('your_model', (json) => YourModel(json)).");
+          }
+          _fields.add(ModelField(
+            parent: this,
+            options: FieldOptions.defaultOptions,
+            useModelInstanciator: (json) => Model.createByType(type!, json)!,
+          ));
         } else {
           _fields.add(DynamicField(parent: this, options: FieldOptions.defaultOptions).fixedType);
         }
-        get(key)?.setFromJson(json[i]);
+        get(key)!.setFromJson(json[i]);
       }
     }
   }
 
   final Type? type;
+
+  int get length => values.length;
+  Field<dynamic> get first => values.first;
+  Field<dynamic> get last => values.last;
 
   @override
   Iterable<Field> get fields => _fields.toList();
@@ -79,6 +91,8 @@ class ModelList extends Model {
     if (index < 0) return null;
     return _fields[index];
   }
+
+  Field? operator [](int i) => at(i);
 
   @override
   toJson() => values.map((e) => e.toJson()).toList();
@@ -109,9 +123,6 @@ abstract class MapModelBasics implements Model {
   @override
   Field? get(String name) => _fields[name];
 
-  @override
-  Iterable<Field> get fields => values;
-
   Iterable<Field> get values => _fields.values;
   Iterable<MapEntry<String, Field>> get entries => _fields.entries;
 
@@ -136,6 +147,10 @@ class ModelMap extends Model with MapModelBasics {
       }
     }
   }
+
+  @override
+  Iterable<Field> get fields => values;
+
   final Type? type;
 }
 
@@ -173,10 +188,22 @@ abstract class ModelBuilder extends Model with MapModelBasics {
       _add(name, DateTimeField(parent: this, options: options));
 
   ModelField<ModelList> listField<T>(String name, {Type? type, FieldOptions options = FieldOptions.defaultOptions}) =>
-      _add(name, ModelField<ModelList>(parent: this, options: options, subType: type ?? T));
+      _add(
+          name,
+          ModelField<ModelList>(
+            parent: this,
+            options: options,
+            useModelInstanciator: (json) => ModelList(json, type: type),
+          ));
 
   ModelField<ModelMap> mapField<T>(String name, {Type? type, FieldOptions options = FieldOptions.defaultOptions}) =>
-      _add(name, ModelField<ModelMap>(parent: this, options: options, subType: type ?? T));
+      _add(
+          name,
+          ModelField<ModelMap>(
+            parent: this,
+            options: options,
+            useModelInstanciator: (json) => ModelMap(json, type: type),
+          ));
 
   ModelField<T> modelField<T>(String name, {FieldOptions options = FieldOptions.defaultOptions}) =>
       _add(name, ModelField<T>(parent: this, options: options));

@@ -22,3 +22,23 @@ class User extends ModelBuilder {
   StringField get username => stringField('username');
   ModelField<Person> get person => modelField('person');
 }
+
+class ShoppingItem extends ModelBuilder {
+  ShoppingItem(super.json);
+
+  @override
+  Iterable<Field> get fields => [name, id];
+
+  StringField get name => stringField('name');
+  IntField get id => intField('id');
+}
+
+class ShoppingCart extends ModelBuilder {
+  ShoppingCart(super.json);
+
+  @override
+  Iterable<Field> get fields => [owner, items];
+
+  StringField get owner => stringField('owner_name');
+  ListField get items => listField('items', type: ShoppingItem);
+}
