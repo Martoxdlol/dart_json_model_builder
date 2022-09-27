@@ -49,8 +49,7 @@ class ModelList extends Model {
           _fields.add(fieldInstanciator(key, json));
         } else if (type != null && type != dynamic) {
           if (Model.modelsNameByType[type] == null) {
-            throw Exception(
-                "Type <T> (now: `$type`) must be a Registered Model or `ModelMap` or `ModelList`. If using custom `Model` subclass, use Model.register('your_model', (json) => YourModel(json)).");
+            throwMissingModelTypeException(type!);
           }
           _fields.add(ModelField(
             parent: this,
@@ -142,7 +141,15 @@ class ModelMap extends Model with MapModelBasics {
   ModelMap(dynamic json, {this.type}) : super(null) {
     if (json is Map) {
       for (final entry in json.entries) {
-        _fields[entry.key] = DynamicField(parent: this, options: FieldOptions.defaultOptions).fixedType;
+        if (type != null) {
+          if (Model.modelsNameByType[type] == null) throwMissingModelTypeException(type!);
+          _fields[entry.key] = ModelField(
+              parent: this,
+              options: FieldOptions.defaultOptions,
+              useModelInstanciator: (json) => Model.createByType(type!, json)!);
+        } else {
+          _fields[entry.key] = DynamicField(parent: this, options: FieldOptions.defaultOptions).fixedType;
+        }
         _fields[entry.key]?.setFromJson(entry.value);
       }
     }
@@ -216,4 +223,9 @@ abstract class ModelBuilder extends Model with MapModelBasics {
     _fields[name] = field;
     return field;
   }
+}
+
+void throwMissingModelTypeException(Type t) {
+  throw Exception(
+      "Type <T> (now: `$t`) must be a Registered Model or `ModelMap` or `ModelList`. If using custom `Model` subclass, use Model.register('your_model', (json) => YourModel(json)).");
 }

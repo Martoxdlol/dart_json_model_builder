@@ -52,3 +52,12 @@ class BackPack extends ModelBuilder {
   MapField get named => mapField('named');
   ListField get generic => listField('generic');
 }
+
+class UsersCollection extends ModelBuilder {
+  UsersCollection(super.json);
+
+  @override
+  Iterable<Field> get fields => [usersById];
+
+  MapField get usersById => mapField('users_by_id', type: User);
+}

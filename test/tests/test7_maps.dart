@@ -34,4 +34,19 @@ void test7() {
 
     print(backpack.toJson());
   });
+
+  test('typed map', () {
+    final usersCollection = UsersCollection({
+      'users_by_id': {
+        '1234': {'name': 'Tomás'},
+        '2345': User({'name': 'Juan'})
+      }
+    });
+
+    final map = usersCollection.usersById.value as ModelMap;
+    expect(map['1234']!.type == User, true);
+    expect(map['1234']!.value['name'].value, 'Tomás');
+    expect(map['2345']!.type == User, true);
+    expect(map['2345']!.value['name'].value, 'Juan');
+  });
 }
