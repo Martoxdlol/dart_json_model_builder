@@ -1,4 +1,4 @@
-import 'package:surrealize/fields.dart';
+import 'package:json_model_builder/fields.dart';
 
 typedef ModelInstanciator = Model Function(dynamic json);
 

@@ -1,5 +1,5 @@
-import 'package:surrealize/fields.dart';
-import 'package:surrealize/models.dart';
+import 'package:json_model_builder/fields.dart';
+import 'package:json_model_builder/models.dart';
 
 class Person extends ModelBuilder {
   Person(super.json);

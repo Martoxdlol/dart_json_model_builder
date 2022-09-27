@@ -1,4 +1,4 @@
-import 'package:surrealize/models.dart';
+import 'package:json_model_builder/models.dart';
 
 import 'models.dart';
 import 'tests/test1_json_basic.dart';

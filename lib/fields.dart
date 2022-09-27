@@ -1,4 +1,4 @@
-import 'package:surrealize/models.dart';
+import 'package:json_model_builder/models.dart';
 
 /// We have different types of fields
 ///

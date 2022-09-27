@@ -1,6 +1,6 @@
 import 'package:json_diff/json_diff.dart';
-import 'package:surrealize/fields.dart';
-import 'package:surrealize/models.dart';
+import 'package:json_model_builder/fields.dart';
+import 'package:json_model_builder/models.dart';
 import 'package:test/test.dart';
 
 import '../models.dart';
