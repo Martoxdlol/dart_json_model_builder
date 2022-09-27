@@ -5,11 +5,13 @@ class Person extends ModelBuilder {
   Person(super.json);
 
   @override
-  Iterable<Field> get fields => [age, name, address];
+  Iterable<Field> get fields => [age, name, address, props, nums];
 
   StringField get name => stringField('name');
   IntField get age => intField('age');
   ModelField<Address> get address => modelField('address');
+  ModelField<ModelMap> get props => mapField('props');
+  ModelField<ModelList> get nums => listField('nums');
 }
 
 class Address extends ModelBuilder {
@@ -39,6 +41,7 @@ void main(List<String> args) {
     'name': 'Tomás',
     'age': 20,
     'address': address,
+    'nums': [1,2,3,4]
   });
 
   print(tomas.toJson());

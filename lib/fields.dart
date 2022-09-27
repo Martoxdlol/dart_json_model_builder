@@ -205,7 +205,7 @@ class ModelField<T> extends Field<Model> {
   ModelField(super.name, {required super.parent, required super.nullable}) {
     if (T == ModelList) _isList = true;
     if (T == ModelMap) _isMap = true;
-    if (!Model.isRegistering && Model.modelsNameByType[T] == null) {
+    if (!_isList && !_isMap && !Model.isRegistering && Model.modelsNameByType[T] == null) {
       throw Exception(
           "Type <T> must be a Registered Model or `ModelMap` or `ModelList`. If using custom `Model` subclass, use Model.register('your_model', (json) => YourModel(json)).");
     }

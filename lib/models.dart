@@ -41,11 +41,13 @@ class ModelList extends Model {
   ModelList(dynamic json, {Field Function(String name, dynamic json)? fieldInstanciator}) : super(null) {
     if (json is List) {
       for (int i = 0; i < json.length; i++) {
+        final key = i.toString();
         if (fieldInstanciator != null) {
-          _fields.add(fieldInstanciator(i.toString(), json));
+          _fields.add(fieldInstanciator(key, json));
         } else {
-          _fields.add(DynamicField(i.toString(), parent: this, nullable: true).fixedType);
+          _fields.add(DynamicField(key, parent: this, nullable: true).fixedType);
         }
+        get(key)?.set(json[i]);
       }
     }
   }
