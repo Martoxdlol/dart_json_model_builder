@@ -13,10 +13,11 @@ import 'package:surrealize/models.dart';
 /// A user can also extend Field class to support custom types
 ///
 abstract class Field<T> {
-  Field(this.name, {required this.parent, required this.nullable});
-  final String name;
+  Field({required this.parent, required this.nullable});
   final bool nullable;
   final Model parent;
+
+  String get name => parent.nameOfField(this);
 
   /// Convert and set any json to `T`
   /// It doesn't crash if passed incorrect data type value
@@ -46,7 +47,7 @@ typedef JSONTYPE = dynamic;
 
 /// Model field for native `int` type
 class IntField extends Field<int> {
-  IntField(super.name, {required super.parent, required super.nullable});
+  IntField({required super.parent, required super.nullable});
 
   @override
   bool setFromJson(json) {
@@ -64,7 +65,7 @@ class IntField extends Field<int> {
 
 /// Model field for native `int` type
 class DoubleField extends Field<double> {
-  DoubleField(super.name, {required super.parent, required super.nullable});
+  DoubleField({required super.parent, required super.nullable});
 
   @override
   bool setFromJson(json) {
@@ -84,7 +85,7 @@ class DoubleField extends Field<double> {
 
 /// Model field for native `String` type
 class StringField extends Field<String> {
-  StringField(super.name, {required super.parent, required super.nullable});
+  StringField({required super.parent, required super.nullable});
 
   @override
   bool setFromJson(json) {
@@ -102,7 +103,7 @@ class StringField extends Field<String> {
 
 /// Model field for native `bool` type
 class BoolField extends Field<bool> {
-  BoolField(super.name, {required super.parent, required super.nullable});
+  BoolField({required super.parent, required super.nullable});
 
   @override
   bool setFromJson(json) {
@@ -120,7 +121,7 @@ class BoolField extends Field<bool> {
 
 /// Model field for native `bool` type
 class DateTimeField extends Field<DateTime> {
-  DateTimeField(super.name, {required super.parent, required super.nullable});
+  DateTimeField({required super.parent, required super.nullable});
 
   @override
   bool setFromJson(json) {
@@ -145,7 +146,7 @@ class DateTimeField extends Field<DateTime> {
 
 /// Model field for native `dynamic` type
 class DynamicField extends Field<dynamic> {
-  DynamicField(super.name, {required super.parent, required super.nullable});
+  DynamicField({required super.parent, required super.nullable});
 
   Field<dynamic>? _internalField;
   Model? _modelValue;
@@ -160,16 +161,16 @@ class DynamicField extends Field<dynamic> {
   bool setFromJson(json) {
     _internalField = null;
     _modelValue = null;
-    if (json is int) _internalField = IntField(name, parent: parent, nullable: nullable);
-    if (json is double) _internalField = DoubleField(name, parent: parent, nullable: nullable);
-    if (json is String) _internalField = StringField(name, parent: parent, nullable: nullable);
-    if (json is bool) _internalField = BoolField(name, parent: parent, nullable: nullable);
-    if (json is DateTime) _internalField = DateTimeField(name, parent: parent, nullable: nullable);
-    if (json is List) _internalField = ModelField<ModelList>(name, parent: parent, nullable: nullable);
-    if (json is Map) _internalField = ModelField<ModelMap>(name, parent: parent, nullable: nullable);
+    if (json is int) _internalField = IntField(parent: parent, nullable: nullable);
+    if (json is double) _internalField = DoubleField(parent: parent, nullable: nullable);
+    if (json is String) _internalField = StringField(parent: parent, nullable: nullable);
+    if (json is bool) _internalField = BoolField(parent: parent, nullable: nullable);
+    if (json is DateTime) _internalField = DateTimeField(parent: parent, nullable: nullable);
+    if (json is List) _internalField = ModelField<ModelList>(parent: parent, nullable: nullable);
+    if (json is Map) _internalField = ModelField<ModelMap>(parent: parent, nullable: nullable);
     if (json is Model) {
-      if (json is ModelList) _internalField = ModelField<ModelList>(name, parent: parent, nullable: nullable);
-      if (json is ModelField) _internalField = ModelField<ModelMap>(name, parent: parent, nullable: nullable);
+      if (json is ModelList) _internalField = ModelField<ModelList>(parent: parent, nullable: nullable);
+      if (json is ModelField) _internalField = ModelField<ModelMap>(parent: parent, nullable: nullable);
       if (_internalField == null) {
         _modelValue = json;
         return true;
@@ -202,7 +203,7 @@ class DynamicField extends Field<dynamic> {
 class ModelField<T> extends Field<Model> {
   bool _isMap = false;
   bool _isList = false;
-  ModelField(super.name, {required super.parent, required super.nullable}) {
+  ModelField({required super.parent, required super.nullable}) {
     if (T == ModelList) _isList = true;
     if (T == ModelMap) _isMap = true;
     if (!_isList && !_isMap && !Model.isRegistering && Model.modelsNameByType[T] == null) {
@@ -210,6 +211,8 @@ class ModelField<T> extends Field<Model> {
           "Type <T> must be a Registered Model or `ModelMap` or `ModelList`. If using custom `Model` subclass, use Model.register('your_model', (json) => YourModel(json)).");
     }
   }
+
+  T? get values => super.value as T;
 
   @override
   bool setFromJson(json) {
@@ -235,3 +238,5 @@ class ModelField<T> extends Field<Model> {
   @override
   JSONTYPE toJson() => value?.toJson();
 }
+
+class FieldOptions {}
