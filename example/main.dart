@@ -41,7 +41,7 @@ void main(List<String> args) {
     'name': 'Tomás',
     'age': 20,
     'address': address,
-    'nums': [1,2,3,4]
+    'nums': [1, 2, 3, 4]
   });
 
   print(tomas.toJson());

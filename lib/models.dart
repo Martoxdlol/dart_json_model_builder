@@ -41,19 +41,23 @@ abstract class Model {
 }
 
 class ModelList extends Model {
-  ModelList(dynamic json, {Field Function(String name, dynamic json)? fieldInstanciator}) : super(null) {
+  ModelList(dynamic json, {this.type, Field Function(String name, dynamic json)? fieldInstanciator}) : super(null) {
     if (json is List) {
       for (int i = 0; i < json.length; i++) {
         final key = i.toString();
         if (fieldInstanciator != null) {
           _fields.add(fieldInstanciator(key, json));
+        } else if (type != null && type != dynamic) {
+          _fields.add(ModelField(parent: this, options: FieldOptions.defaultOptions, subType: type));
         } else {
-          _fields.add(DynamicField(parent: this, nullable: true).fixedType);
+          _fields.add(DynamicField(parent: this, options: FieldOptions.defaultOptions).fixedType);
         }
-        get(key)?.set(json[i]);
+        get(key)?.setFromJson(json[i]);
       }
     }
   }
+
+  final Type? type;
 
   @override
   Iterable<Field> get fields => _fields.toList();
@@ -124,14 +128,15 @@ abstract class MapModelBasics implements Model {
 }
 
 class ModelMap extends Model with MapModelBasics {
-  ModelMap(dynamic json) : super(null) {
+  ModelMap(dynamic json, {this.type}) : super(null) {
     if (json is Map) {
       for (final entry in json.entries) {
-        _fields[entry.key] = DynamicField(parent: this, nullable: true).fixedType;
+        _fields[entry.key] = DynamicField(parent: this, options: FieldOptions.defaultOptions).fixedType;
         _fields[entry.key]?.setFromJson(entry.value);
       }
     }
   }
+  final Type? type;
 }
 
 abstract class ModelBuilder extends Model with MapModelBasics {
@@ -148,30 +153,36 @@ abstract class ModelBuilder extends Model with MapModelBasics {
   @override
   Iterable<Field> get fields;
 
-  IntField intField(String name, {bool nullable = true}) => _add(name, IntField(parent: this, nullable: nullable));
-  //
-  DoubleField doubleField(String name, {bool nullable = true}) =>
-      _add(name, DoubleField(parent: this, nullable: nullable));
-  //
-  StringField stringField(String name, {bool nullable = true}) =>
-      _add(name, StringField(parent: this, nullable: nullable));
-  //
-  BoolField boolField(String name, {bool nullable = true}) => _add(name, BoolField(parent: this, nullable: nullable));
-  //
-  DateTimeField dateTimeField(String name, {bool nullable = true}) =>
-      _add(name, DateTimeField(parent: this, nullable: nullable));
-  //
-  ModelField<ModelList> listField(String name, {bool nullable = true}) =>
-      _add(name, ModelField<ModelList>(parent: this, nullable: nullable));
-  //
-  ModelField<ModelMap> mapField(String name, {bool nullable = true}) =>
-      _add(name, ModelField<ModelMap>(parent: this, nullable: nullable));
-  //
-  ModelField<T> modelField<T>(String name, {bool nullable = true}) =>
-      _add(name, ModelField<T>(parent: this, nullable: nullable));
-  //
-  DynamicField dynamicField(String name, {bool nullable = true}) =>
-      _add(name, DynamicField(parent: this, nullable: nullable));
+  IntField intField(String name, {FieldOptions options = FieldOptions.defaultOptions}) => _add(
+      name,
+      IntField(
+        parent: this,
+        options: options,
+      ));
+
+  DoubleField doubleField(String name, {FieldOptions options = FieldOptions.defaultOptions}) =>
+      _add(name, DoubleField(parent: this, options: options));
+
+  StringField stringField(String name, {FieldOptions options = FieldOptions.defaultOptions}) =>
+      _add(name, StringField(parent: this, options: options));
+
+  BoolField boolField(String name, {FieldOptions options = FieldOptions.defaultOptions}) =>
+      _add(name, BoolField(parent: this, options: options));
+
+  DateTimeField dateTimeField(String name, {FieldOptions options = FieldOptions.defaultOptions}) =>
+      _add(name, DateTimeField(parent: this, options: options));
+
+  ModelField<ModelList> listField<T>(String name, {Type? type, FieldOptions options = FieldOptions.defaultOptions}) =>
+      _add(name, ModelField<ModelList>(parent: this, options: options, subType: type ?? T));
+
+  ModelField<ModelMap> mapField<T>(String name, {Type? type, FieldOptions options = FieldOptions.defaultOptions}) =>
+      _add(name, ModelField<ModelMap>(parent: this, options: options, subType: type ?? T));
+
+  ModelField<T> modelField<T>(String name, {FieldOptions options = FieldOptions.defaultOptions}) =>
+      _add(name, ModelField<T>(parent: this, options: options));
+
+  DynamicField dynamicField(String name, {FieldOptions options = FieldOptions.defaultOptions}) =>
+      _add(name, DynamicField(parent: this, options: options));
 
   dynamic _add(String name, Field field) {
     if (_fields[name] != null) return _fields[name];

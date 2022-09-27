@@ -13,8 +13,8 @@ import 'package:surrealize/models.dart';
 /// A user can also extend Field class to support custom types
 ///
 abstract class Field<T> {
-  Field({required this.parent, required this.nullable});
-  final bool nullable;
+  Field({required this.parent, required this.options});
+  final FieldOptions options;
   final Model parent;
 
   String get name => parent.nameOfField(this);
@@ -47,7 +47,7 @@ typedef JSONTYPE = dynamic;
 
 /// Model field for native `int` type
 class IntField extends Field<int> {
-  IntField({required super.parent, required super.nullable});
+  IntField({required super.parent, required super.options});
 
   @override
   bool setFromJson(json) {
@@ -65,7 +65,7 @@ class IntField extends Field<int> {
 
 /// Model field for native `int` type
 class DoubleField extends Field<double> {
-  DoubleField({required super.parent, required super.nullable});
+  DoubleField({required super.parent, required super.options});
 
   @override
   bool setFromJson(json) {
@@ -85,7 +85,7 @@ class DoubleField extends Field<double> {
 
 /// Model field for native `String` type
 class StringField extends Field<String> {
-  StringField({required super.parent, required super.nullable});
+  StringField({required super.parent, required super.options});
 
   @override
   bool setFromJson(json) {
@@ -103,7 +103,7 @@ class StringField extends Field<String> {
 
 /// Model field for native `bool` type
 class BoolField extends Field<bool> {
-  BoolField({required super.parent, required super.nullable});
+  BoolField({required super.parent, required super.options});
 
   @override
   bool setFromJson(json) {
@@ -121,7 +121,7 @@ class BoolField extends Field<bool> {
 
 /// Model field for native `bool` type
 class DateTimeField extends Field<DateTime> {
-  DateTimeField({required super.parent, required super.nullable});
+  DateTimeField({required super.parent, required super.options});
 
   @override
   bool setFromJson(json) {
@@ -146,7 +146,7 @@ class DateTimeField extends Field<DateTime> {
 
 /// Model field for native `dynamic` type
 class DynamicField extends Field<dynamic> {
-  DynamicField({required super.parent, required super.nullable});
+  DynamicField({required super.parent, required super.options});
 
   Field<dynamic>? _internalField;
   Model? _modelValue;
@@ -161,16 +161,16 @@ class DynamicField extends Field<dynamic> {
   bool setFromJson(json) {
     _internalField = null;
     _modelValue = null;
-    if (json is int) _internalField = IntField(parent: parent, nullable: nullable);
-    if (json is double) _internalField = DoubleField(parent: parent, nullable: nullable);
-    if (json is String) _internalField = StringField(parent: parent, nullable: nullable);
-    if (json is bool) _internalField = BoolField(parent: parent, nullable: nullable);
-    if (json is DateTime) _internalField = DateTimeField(parent: parent, nullable: nullable);
-    if (json is List) _internalField = ModelField<ModelList>(parent: parent, nullable: nullable);
-    if (json is Map) _internalField = ModelField<ModelMap>(parent: parent, nullable: nullable);
+    if (json is int) _internalField = IntField(parent: parent, options: options);
+    if (json is double) _internalField = DoubleField(parent: parent, options: options);
+    if (json is String) _internalField = StringField(parent: parent, options: options);
+    if (json is bool) _internalField = BoolField(parent: parent, options: options);
+    if (json is DateTime) _internalField = DateTimeField(parent: parent, options: options);
+    if (json is List) _internalField = ModelField<ModelList>(parent: parent, options: options);
+    if (json is Map) _internalField = ModelField<ModelMap>(parent: parent, options: options);
     if (json is Model) {
-      if (json is ModelList) _internalField = ModelField<ModelList>(parent: parent, nullable: nullable);
-      if (json is ModelField) _internalField = ModelField<ModelMap>(parent: parent, nullable: nullable);
+      if (json is ModelList) _internalField = ModelField<ModelList>(parent: parent, options: options);
+      if (json is ModelField) _internalField = ModelField<ModelMap>(parent: parent, options: options);
       if (_internalField == null) {
         _modelValue = json;
         return true;
@@ -203,15 +203,19 @@ class DynamicField extends Field<dynamic> {
 class ModelField<T> extends Field<Model> {
   bool _isMap = false;
   bool _isList = false;
-  ModelField({required super.parent, required super.nullable}) {
-    if (T == ModelList) _isList = true;
-    if (T == ModelMap) _isMap = true;
-    if (!_isList && !_isMap && !Model.isRegistering && Model.modelsNameByType[T] == null) {
+  ModelField({required super.parent, required super.options, Type? subType}) {
+    _subtype = subType;
+    if (type == ModelList) _isList = true;
+    if (type == ModelMap) _isMap = true;
+    if (!_isList && !_isMap && !Model.isRegistering && Model.modelsNameByType[type] == null) {
       throw Exception(
           "Type <T> must be a Registered Model or `ModelMap` or `ModelList`. If using custom `Model` subclass, use Model.register('your_model', (json) => YourModel(json)).");
     }
   }
 
+  late final Type? _subtype;
+
+  Type get type => T;
   T? get values => super.value as T;
 
   @override
@@ -219,16 +223,22 @@ class ModelField<T> extends Field<Model> {
     _loaded = false;
 
     if (_isList) {
-      set(ModelList(json));
+      set(ModelList(
+        json,
+        type: _subtype,
+      ));
     } else if (_isMap) {
-      set(ModelMap(json));
-    } else if (json is Model && Model == T) {
+      set(ModelMap(
+        json,
+        type: _subtype,
+      ));
+    } else if (json is Model && Model == type) {
       set(json);
     } else if (json is Model) {
-      final value = Model.createByType(T, json.toJson());
+      final value = Model.createByType(type, json.toJson());
       if (value != null) set(value);
     } else {
-      final value = Model.createByType(T, json);
+      final value = Model.createByType(type, json);
       if (value != null) set(value);
     }
 
@@ -239,4 +249,11 @@ class ModelField<T> extends Field<Model> {
   JSONTYPE toJson() => value?.toJson();
 }
 
-class FieldOptions {}
+typedef FieldValueValidator<T> = bool Function(T value);
+
+class FieldOptions {
+  const FieldOptions({this.nullable = true, this.validator});
+  final bool nullable;
+  final FieldValueValidator? validator;
+  static const defaultOptions = FieldOptions();
+}
