@@ -32,7 +32,7 @@ abstract class Field<T> {
 
   // Store the value privately
   T? _value;
-  T? get value => _loaded ? _value : throw Exception('Value of field `$name` must be loaded first');
+  T? get value => _loaded ? _value : null;
   bool get isNull => value == null;
 
   // Setter, this is more clear than using a native setter
@@ -206,7 +206,8 @@ class ModelField<T> extends Field<Model> {
     if (T == ModelList) _isList = true;
     if (T == ModelMap) _isMap = true;
     if (!Model.isRegistering && Model.modelsNameByType[T] == null) {
-      throw Exception("Type <T> must be a Registered Model or `ModelMap` or `ModelList`. If using custom `Model` subclass, use Model.register('your_model', (json) => YourModel(json)).");
+      throw Exception(
+          "Type <T> must be a Registered Model or `ModelMap` or `ModelList`. If using custom `Model` subclass, use Model.register('your_model', (json) => YourModel(json)).");
     }
   }
 
@@ -218,6 +219,11 @@ class ModelField<T> extends Field<Model> {
       set(ModelList(json));
     } else if (_isMap) {
       set(ModelMap(json));
+    } else if (json is Model && Model == T) {
+      set(json);
+    } else if (json is Model) {
+      final value = Model.createByType(T, json.toJson());
+      if (value != null) set(value);
     } else {
       final value = Model.createByType(T, json);
       if (value != null) set(value);
@@ -227,5 +233,5 @@ class ModelField<T> extends Field<Model> {
   }
 
   @override
-  JSONTYPE toJson() => value;
+  JSONTYPE toJson() => value?.toJson();
 }

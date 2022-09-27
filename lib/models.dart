@@ -139,6 +139,7 @@ abstract class ModelBuilder extends Model {
       _add(DynamicField(name, parent: this, nullable: nullable));
 
   dynamic _add(Field field) {
+    if (_fields[field.name] != null) return _fields[field.name];
     _fields[field.name] = field;
     return field;
   }

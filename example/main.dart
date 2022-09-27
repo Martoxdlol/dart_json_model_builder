@@ -42,4 +42,6 @@ void main(List<String> args) {
   });
 
   print(tomas.toJson());
+  print(address.toJson());
+  print(tomas.name.value);
 }
