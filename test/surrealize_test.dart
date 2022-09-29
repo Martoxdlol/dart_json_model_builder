@@ -17,7 +17,7 @@ void main() {
   Model.register('shopping_cart', (json) => ShoppingCart(json));
   Model.register('backpack', (json) => BackPack(json));
 
-  test('example code', (() => example.main));
+  test('example code', (() => example.main([])));
 
   test1();
   test2();
