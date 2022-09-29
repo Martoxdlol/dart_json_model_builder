@@ -6,12 +6,12 @@ repository: https://github.com/Martoxdlol/dart_json_model_builder
 documentation: https://github.com/Martoxdlol/dart_json_model_builder/blob/master/README.md
 
 platforms:
-  - android
-  - ios
-  - linux
-  - macos
-  - web
-  - windows
+  android:
+  ios:
+  linux:
+  macos:
+  web:
+  windows:
 
 environment:
   sdk: '>=2.17.0 <3.0.0'
