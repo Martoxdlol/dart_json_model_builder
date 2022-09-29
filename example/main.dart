@@ -1,21 +1,22 @@
 import 'package:json_model_builder/fields.dart';
 import 'package:json_model_builder/models.dart';
 
-/**
- * THIS FILE IS JUST SOME EXPERIMENTS
- */
-
 class Person extends ModelBuilder {
   Person(super.json);
 
   @override
-  Iterable<Field> get fields => [age, name, address, props, nums];
+  Iterable<Field> get fields => [age, name, address, properties, numbersArray, otherHomes];
 
   StringField get name => stringField('name');
   IntField get age => intField('age');
+
   ModelField<Address> get address => modelField('address');
-  ModelField<ModelMap> get props => mapField('props');
-  ModelField<ModelList> get nums => listField('nums');
+
+  ModelField<ModelMap> get properties => mapField('props'); // Equivalent to: Map<String, dynamic>
+
+  ModelField<ModelList> get numbersArray => listField('numbers_array', type: int); //Equivalent to List<int>
+
+  ModelField<ModelMap> get otherHomes => mapField('homes', type: Address); // Equivalent to: Map<String, dynamic>
 }
 
 class Address extends ModelBuilder {
@@ -35,20 +36,60 @@ void main(List<String> args) {
   Model.register('person', (json) => Person(json));
   Model.register('address', (json) => Address(json));
 
-  final address = Address({'street': 'Some Street'});
-  address.number.set(123);
-  address.city.set('Vicente López');
-  address.state.set('Buenos Aires');
-  address.country.set('Argentina');
-
   final tomas = Person({
     'name': 'Tomás',
-    'age': 20,
-    'address': address,
-    'nums': [1, 2, 3, 4]
+    'age': 20, // You can also use: 'age': '20' and it will be converted to int
+    'address': {
+      'street': 'Some Street',
+      'city': 'Some City',
+      'country': 'Dream Land',
+    }
   });
 
-  print(tomas.toJson());
-  print(address.toJson());
-  print(tomas.name.value);
+  tomas.address.current?.number.set(1234);
+
+  final department = Address({
+    'street': 'Some Street',
+    'number': 123,
+    'city': 'Some City',
+    'country': 'Dream Land',
+  });
+
+  tomas.otherHomes.current?.set('department', department);
+
+  if (!tomas.numbersArray.isLoaded) {
+    tomas.numbersArray.setFromJson([
+      10,
+      20,
+      '30', // Will be converted to int
+      'xyz', // Will be ignored
+    ]);
+  }
+
+  //field `properties` can have any value type
+  tomas.properties.setFromJson({
+    'score': 100,
+  });
+  tomas.properties.current!['cats'] = ['Luna', 'Lily', 'Daddy'];
+  tomas.properties.current!.set('born', 2002);
+
+  final lucas = Person({
+    'name': 'Lucas',
+    'address': {
+      'street': 'Some Street',
+      'number': 123,
+      'city': 'Some City',
+      'country': 'Dream Land',
+    },
+  });
+
+  String lucasName = lucas.name.value!;
+  Address lucasMainHome = lucas.address.current!;
+
+  // Using .value or .current is equivalent
+  // current can only be used over ModelFields and returns the correct type
+  assert(lucasMainHome == lucas.address.value);
+  assert(lucasMainHome == lucas.address.value as Address);
+
+  final vacationHome = Address({});
 }
