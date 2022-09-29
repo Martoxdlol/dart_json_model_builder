@@ -45,34 +45,40 @@ class ModelList extends Model {
   ModelList(dynamic json, {this.type, Field Function(String name, dynamic json)? fieldInstanciator}) : super(null) {
     if (json is List) {
       for (int i = 0; i < json.length; i++) {
-        final key = i.toString();
-        if (fieldInstanciator != null) {
-          _fields.add(fieldInstanciator(key, json));
-          get(key)!.setFromJson(json[i]);
-          continue;
-        }
-
-        final usableType = UsableType(type ?? dynamic);
-
-        if (usableType.isRegisteredModel) {
-          _fields.add(ModelField(
-            parent: this,
-            options: FieldOptions.defaultOptions,
-            useModelInstanciator: (json) => Model.createByType(type!, json)!,
-          ));
-          get(key)!.setFromJson(json[i]);
-          continue;
-        }
-
-        final value = usableType.createFromAny(json[i]);
-        if (!usableType.isDynamic && value == null) {
-          continue;
-        }
-
-        _fields.add(DynamicField(parent: this, options: FieldOptions.defaultOptions).fixedType);
-        get(key)!.setFromJson(value);
+        _addField(json[i], fieldInstanciator);
       }
     }
+  }
+
+  bool _addField(dynamic json, Field Function(String name, dynamic json)? fieldInstanciator) {
+    int index = length;
+    final key = index.toString();
+    if (fieldInstanciator != null) {
+      _fields.add(fieldInstanciator(key, json));
+      get(key)!.setFromJson(json);
+      return true;
+    }
+
+    final usableType = UsableType(type ?? dynamic);
+
+    if (usableType.isRegisteredModel) {
+      _fields.add(ModelField(
+        parent: this,
+        options: FieldOptions.defaultOptions,
+        useModelInstanciator: (json) => Model.createByType(type!, json)!,
+      ));
+      get(key)!.setFromJson(json);
+      return true;
+    }
+
+    final value = usableType.createFromAny(json);
+    if (!usableType.isDynamic && value == null) {
+      return false;
+    }
+
+    _fields.add(DynamicField(parent: this, options: FieldOptions.defaultOptions).fixedType);
+    get(key)!.setFromJson(value);
+    return true;
   }
 
   final Type? type;
@@ -96,6 +102,12 @@ class ModelList extends Model {
     return at(index);
   }
 
+  bool set(int index, dynamic value) => at(index)?.setFromJson(value) ?? false;
+
+  bool add(dynamic value) {
+    return _addField(value, null);
+  }
+
   Field? at(int index) {
     if (_fields.length <= index) return null;
     if (index < 0) return null;
@@ -103,6 +115,13 @@ class ModelList extends Model {
   }
 
   Field? operator [](int i) => at(i);
+  void operator []=(int i, dynamic value) {
+    if (i == length) {
+      _addField(value, null);
+    } else {
+      set(i, value);
+    }
+  }
 
   @override
   toJson() => values.map((e) => e.toJson()).toList();
