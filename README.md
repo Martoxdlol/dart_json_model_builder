@@ -38,6 +38,19 @@ class Person extends ModelBuilder {
   ModelField<ModelMap> get otherHomes => mapField('homes', type: Address); // Equivalent to: Map<String, dynamic>
 }
 
+class Address extends ModelBuilder {
+  Address(super.json);
+
+  @override
+  Iterable<Field> get fields => [street, number, city, state, country];
+
+  StringField get street => stringField('street');
+  IntField get number => intField('number');
+  StringField get city => stringField('city');
+  StringField get state => stringField('state');
+  StringField get country => stringField('country');
+}
+
 void main() {
   // IMPORTANT: you must register Model types
   Model.register('person', (json) => Person(json));
