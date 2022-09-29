@@ -5,7 +5,18 @@ import 'package:test/test.dart';
 
 import '../models.dart';
 
+class MapIntTest extends ModelBuilder {
+  MapIntTest(super.json);
+
+  @override
+  Iterable<Field> get fields => [numbers];
+
+  MapField get numbers => mapField('numbers', type: int);
+}
+
 void test7() {
+  Model.register('ints', ((json) => MapIntTest(json)));
+
   test('generic map', () {
     final backpack = BackPack({
       'named': {
@@ -31,11 +42,9 @@ void test7() {
     expect(map['two']!.value, 'two');
     expect(map['two']!.name, 'two');
     expect(map['two']!.type, String);
-
-    print(backpack.toJson());
   });
 
-  test('typed map', () {
+  test('model typed map', () {
     final usersCollection = UsersCollection({
       'users_by_id': {
         '1234': {'name': 'Tomás'},
@@ -48,5 +57,20 @@ void test7() {
     expect(map['1234']!.value['name'].value, 'Tomás');
     expect(map['2345']!.type == User, true);
     expect(map['2345']!.value['name'].value, 'Juan');
+  });
+
+  test('primitive typed map', () {
+    final cleanJson = {
+      'numbers': {'one': 1, 'two': 2, 'three': 3}
+    };
+    final numbers = MapIntTest(cleanJson);
+
+    expect(JsonDiffer.fromJson(cleanJson, numbers.toJson()).diff().hasChanged, false);
+
+    final numbers2 = MapIntTest({
+      'numbers': {'one': 1, 'two': 2, 'three': '3', 'seven': 'null', 'null': null}
+    });
+
+    expect(JsonDiffer.fromJson(cleanJson, numbers2.toJson()).diff().hasChanged, false);
   });
 }

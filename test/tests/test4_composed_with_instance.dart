@@ -15,8 +15,8 @@ void test4() {
     expect('mary99', user1.username.value);
     expect(true, user1.person.isLoaded);
     expect(true, user1.person.value != null);
-    expect('Maria', user1.person.values?.name.value);
-    expect(26, user1.person.values?.age.value);
+    expect('Maria', user1.person.current?.name.value);
+    expect(26, user1.person.current?.age.value);
     expect(false, JsonDiffer.fromJson(json, user1.toJson()).diff().hasChanged);
   });
 }

@@ -221,8 +221,9 @@ class ModelField<T> extends Field<Model> {
 
   ModelInstanciator? useModelInstanciator;
 
+  @override
   Type get type => useModelInstanciator != null ? useModelInstanciator!.call({}).runtimeType : T;
-  T? get values => super.value as T;
+  T? get current => super.value as T?;
 
   @override
   bool setFromJson(json) {

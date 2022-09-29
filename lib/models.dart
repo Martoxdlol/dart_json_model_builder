@@ -1,4 +1,5 @@
 import 'package:json_model_builder/fields.dart';
+import 'package:json_model_builder/usable_type.dart';
 
 typedef ModelInstanciator = Model Function(dynamic json);
 
@@ -47,19 +48,29 @@ class ModelList extends Model {
         final key = i.toString();
         if (fieldInstanciator != null) {
           _fields.add(fieldInstanciator(key, json));
-        } else if (type != null && type != dynamic) {
-          if (Model.modelsNameByType[type] == null) {
-            throwMissingModelTypeException(type!);
-          }
+          get(key)!.setFromJson(json[i]);
+          continue;
+        }
+
+        final usableType = UsableType(type ?? dynamic);
+
+        if (usableType.isRegisteredModel) {
           _fields.add(ModelField(
             parent: this,
             options: FieldOptions.defaultOptions,
             useModelInstanciator: (json) => Model.createByType(type!, json)!,
           ));
-        } else {
-          _fields.add(DynamicField(parent: this, options: FieldOptions.defaultOptions).fixedType);
+          get(key)!.setFromJson(json[i]);
+          continue;
         }
-        get(key)!.setFromJson(json[i]);
+
+        final value = usableType.createFromAny(json[i]);
+        if (!usableType.isDynamic && value == null) {
+          continue;
+        }
+
+        _fields.add(DynamicField(parent: this, options: FieldOptions.defaultOptions).fixedType);
+        get(key)!.setFromJson(value);
       }
     }
   }
@@ -122,6 +133,8 @@ abstract class MapModelBasics implements Model {
   @override
   Field? get(String name) => _fields[name];
 
+  bool set(String key, dynamic value) => _fields[key]?.setFromJson(value) ?? false;
+
   Iterable<Field> get values => _fields.values;
   Iterable<MapEntry<String, Field>> get entries => _fields.entries;
 
@@ -135,22 +148,28 @@ abstract class MapModelBasics implements Model {
   }
 
   Field? operator [](String key) => get(key);
+  void operator []=(String key, dynamic vlaue) => set(key, vlaue);
 }
 
 class ModelMap extends Model with MapModelBasics {
   ModelMap(dynamic json, {this.type}) : super(null) {
+    if (Model.isRegistering) return;
     if (json is Map) {
       for (final entry in json.entries) {
-        if (type != null) {
-          if (Model.modelsNameByType[type] == null) throwMissingModelTypeException(type!);
-          _fields[entry.key] = ModelField(
-              parent: this,
-              options: FieldOptions.defaultOptions,
-              useModelInstanciator: (json) => Model.createByType(type!, json)!);
+        final usableType = UsableType(type ?? dynamic);
+        final value = usableType.createFromAny(entry.value);
+        if (usableType.isRegisteredModel) {
+          if (value != null) {
+            _fields[entry.key] = ModelField(
+                parent: this, options: FieldOptions.defaultOptions, useModelInstanciator: (json) => Model.createByType(type!, json)!);
+          }
+        } else if (!usableType.isDynamic) {
+          if (value != null) _fields[entry.key] = DynamicField(parent: this, options: FieldOptions.defaultOptions).fixedType;
         } else {
           _fields[entry.key] = DynamicField(parent: this, options: FieldOptions.defaultOptions).fixedType;
         }
-        _fields[entry.key]?.setFromJson(entry.value);
+
+        _fields[entry.key]?.setFromJson(value);
       }
     }
   }
@@ -194,23 +213,21 @@ abstract class ModelBuilder extends Model with MapModelBasics {
   DateTimeField dateTimeField(String name, {FieldOptions options = FieldOptions.defaultOptions}) =>
       _add(name, DateTimeField(parent: this, options: options));
 
-  ModelField<ModelList> listField<T>(String name, {Type? type, FieldOptions options = FieldOptions.defaultOptions}) =>
-      _add(
-          name,
-          ModelField<ModelList>(
-            parent: this,
-            options: options,
-            useModelInstanciator: (json) => ModelList(json, type: type),
-          ));
+  ModelField<ModelList> listField<T>(String name, {Type? type, FieldOptions options = FieldOptions.defaultOptions}) => _add(
+      name,
+      ModelField<ModelList>(
+        parent: this,
+        options: options,
+        useModelInstanciator: (json) => ModelList(json, type: type),
+      ));
 
-  ModelField<ModelMap> mapField<T>(String name, {Type? type, FieldOptions options = FieldOptions.defaultOptions}) =>
-      _add(
-          name,
-          ModelField<ModelMap>(
-            parent: this,
-            options: options,
-            useModelInstanciator: (json) => ModelMap(json, type: type),
-          ));
+  ModelField<ModelMap> mapField<T>(String name, {Type? type, FieldOptions options = FieldOptions.defaultOptions}) => _add(
+      name,
+      ModelField<ModelMap>(
+        parent: this,
+        options: options,
+        useModelInstanciator: (json) => ModelMap(json, type: type),
+      ));
 
   ModelField<T> modelField<T>(String name, {FieldOptions options = FieldOptions.defaultOptions}) =>
       _add(name, ModelField<T>(parent: this, options: options));
@@ -223,9 +240,4 @@ abstract class ModelBuilder extends Model with MapModelBasics {
     _fields[name] = field;
     return field;
   }
-}
-
-void throwMissingModelTypeException(Type t) {
-  throw Exception(
-      "Type <T> (now: `$t`) must be a Registered Model or `ModelMap` or `ModelList`. If using custom `Model` subclass, use Model.register('your_model', (json) => YourModel(json)).");
 }
