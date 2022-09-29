@@ -191,8 +191,7 @@ class DynamicField extends Field<dynamic> {
   @override
   void set(value) {
     if (!setFromJson(value)) {
-      throw Exception(
-          'Cannot set value of type `${value.runtimeType}` to dynamic field. It must be a JSON primitive or `Model` subclass.');
+      throw Exception('Cannot set value of type `${value.runtimeType}` to dynamic field. It must be a JSON primitive or `Model` subclass.');
     }
   }
 
