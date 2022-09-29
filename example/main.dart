@@ -1,8 +1,8 @@
 import 'package:json_model_builder/fields.dart';
 import 'package:json_model_builder/models.dart';
 
-class Person extends ModelBuilder {
-  Person(super.json);
+class Human extends ModelBuilder {
+  Human(super.json);
 
   @override
   Iterable<Field> get fields => [age, name, address, properties, numbersArray, otherHomes];
@@ -33,10 +33,11 @@ class Address extends ModelBuilder {
 }
 
 void main(List<String> args) {
-  Model.register('person', (json) => Person(json));
+  Model.register('human', (json) => Human(json));
   Model.register('address', (json) => Address(json));
+  Model.register('all_types', (json) => ModelUsingAllPosibleTypes(json));
 
-  final tomas = Person({
+  final tomas = Human({
     'name': 'Tomás',
     'age': 20, // You can also use: 'age': '20' and it will be converted to int
     'address': {
@@ -73,7 +74,7 @@ void main(List<String> args) {
   tomas.properties.current!['cats'] = ['Luna', 'Lily', 'Daddy'];
   tomas.properties.current!.set('born', 2002);
 
-  final lucas = Person({
+  final lucas = Human({
     'name': 'Lucas',
     'address': {
       'street': 'Some Street',
@@ -94,8 +95,74 @@ void main(List<String> args) {
   assert(lucasMainHome == lucas.address.value);
   assert(lucasMainHome == lucas.address.value as Address);
 
-  final vacationHome = lucas.otherHomes.current!['vacation'];
+  final vacationHome = lucas.otherHomes.current!['vacation']!.value;
   assert(vacationHome is Address);
   assert((vacationHome as Address).street.value == 'beach');
   assert((vacationHome as Address).number.value == 123);
+
+  final something = ModelUsingAllPosibleTypes({
+    'date': DateTime.now(),
+    'integer': 10,
+    'number': 33.33,
+    'name': 'Tobby',
+    'is_correct': true,
+    'things': [
+      1,
+      'three',
+      Human({'name': 'four'}),
+      ['x', 'x', 'x', 'x', 'x'],
+    ],
+    'numbers': [10, 20, '30', '40'],
+    'friends': [
+      Human({'name': 'Lucas'}),
+      {'name': 'John', 'age': 35},
+    ],
+    'properties': {
+      'prop1': 10,
+      'props2': '...',
+      'other': {'...': '...'}
+    },
+    'scores': {
+      'tobby': 10,
+      'licas': 20,
+    },
+    'players': {
+      'lucas': {'name': 'Lucas'},
+      'john': Human({'name': 'John', 'age': 35}),
+    }
+  });
+
+  assert(something.numbers.current![3]!.value is double);
+  assert(something.friends.current![1]!.value is Human);
+  assert(something.playersByName.current!['lucas']!.value is Human);
+  // print(something.toJson());
+}
+
+class ModelUsingAllPosibleTypes extends ModelBuilder {
+  ModelUsingAllPosibleTypes(super.json);
+
+  @override
+  Iterable<Field> get fields => [date, integer, number, name, correct, arrayOfAny, numbers, friends, properties, scores, playersByName];
+
+  DateTimeField get date => dateTimeField('date');
+
+  IntField get integer => intField('integer');
+
+  DoubleField get number => doubleField('number');
+
+  StringField get name => stringField('name');
+
+  BoolField get correct => boolField('is_correct');
+
+  ListField get arrayOfAny => listField('things');
+
+  ListField get numbers => listField('numbers', type: double);
+
+  ListField get friends => listField('friends', type: Human);
+
+  MapField get properties => mapField('properties');
+
+  MapField get scores => mapField('scores', type: int);
+
+  MapField get playersByName => mapField('players', type: Human);
 }
