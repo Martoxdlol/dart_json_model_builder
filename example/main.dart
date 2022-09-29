@@ -81,6 +81,9 @@ void main(List<String> args) {
       'city': 'Some City',
       'country': 'Dream Land',
     },
+    'homes': {
+      'vacation': {'street': 'beach', 'number': 123}
+    }
   });
 
   String lucasName = lucas.name.value!;
@@ -91,5 +94,8 @@ void main(List<String> args) {
   assert(lucasMainHome == lucas.address.value);
   assert(lucasMainHome == lucas.address.value as Address);
 
-  final vacationHome = Address({});
+  final vacationHome = lucas.otherHomes.current!['vacation'];
+  assert(vacationHome is Address);
+  assert((vacationHome as Address).street.value == 'beach');
+  assert((vacationHome as Address).number.value == 123);
 }
