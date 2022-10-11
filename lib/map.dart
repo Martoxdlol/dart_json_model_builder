@@ -3,7 +3,8 @@ import 'dart:collection';
 import 'package:json_model_builder/types.dart';
 
 /// JsonType map compatible to Map
-class JsonMap<T extends JsonType> extends MapBase<String, T> implements JsonType {
+class JsonMap<T extends JsonType> extends MapBase<String, T>
+    implements JsonType {
   JsonMap(this.childCreator);
 
   final T Function() childCreator;
@@ -47,7 +48,8 @@ class JsonMap<T extends JsonType> extends MapBase<String, T> implements JsonType
 }
 
 /// JsonTypeNullable map compatible to Map
-class JsonMapNullable<T extends JsonType> extends JsonMap<T> implements JsonTypeNullable {
+class JsonMapNullable<T extends JsonType> extends JsonMap<T>
+    implements JsonTypeNullable {
   JsonMapNullable(super.childCreator);
 
   bool _isNull = true;
@@ -76,17 +78,24 @@ class JsonMapNullable<T extends JsonType> extends JsonMap<T> implements JsonType
   toJson() => isNull ? null : super.toJson();
 
   @override
-  T? operator [](Object? key) => !isNull ? _map[key] : throw Exception('Cannot get key of null Map');
+  T? operator [](Object? key) =>
+      !isNull ? _map[key] : throw Exception('Cannot get key of null Map');
 
   @override
-  void operator []=(String key, T value) => !isNull ? super[key] = value : throw Exception('Cannot set key of null Map');
+  void operator []=(String key, T value) => !isNull
+      ? super[key] = value
+      : throw Exception('Cannot set key of null Map');
 
   @override
-  void clear() => !isNull ? super.clear() : throw Exception('Cannot clear null Map');
+  void clear() =>
+      !isNull ? super.clear() : throw Exception('Cannot clear null Map');
 
   @override
-  Iterable<String> get keys => !isNull ? super.keys : throw Exception('Cannot get keys of null map');
+  Iterable<String> get keys =>
+      !isNull ? super.keys : throw Exception('Cannot get keys of null map');
 
   @override
-  T? remove(Object? key) => !isNull ? super.remove(key) : throw Exception('Cannot remove key of null Map');
+  T? remove(Object? key) => !isNull
+      ? super.remove(key)
+      : throw Exception('Cannot remove key of null Map');
 }

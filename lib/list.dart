@@ -42,7 +42,8 @@ class JsonList<T extends JsonType> extends ListBase<T> implements JsonType {
 }
 
 /// JsonTypeNullable list compatible to List
-class JsonListNullable<T extends JsonType> extends JsonList<T> implements JsonTypeNullable {
+class JsonListNullable<T extends JsonType> extends JsonList<T>
+    implements JsonTypeNullable {
   JsonListNullable(super.childCreator);
 
   bool _isNull = true;
@@ -71,14 +72,22 @@ class JsonListNullable<T extends JsonType> extends JsonList<T> implements JsonTy
   toJson() => isNull ? null : super.toJson();
 
   @override
-  int get length => !isNull ? super.length : throw Exception('Null List doesn\'t have length');
+  int get length => !isNull
+      ? super.length
+      : throw Exception('Null List doesn\'t have length');
 
   @override
-  operator [](int index) => !isNull ? super[index] : throw Exception('Null List doesn\'t have any value at any index');
+  operator [](int index) => !isNull
+      ? super[index]
+      : throw Exception('Null List doesn\'t have any value at any index');
 
   @override
-  void operator []=(int index, value) => !isNull ? super[index] = value : throw Exception('Cannot set value of a null List');
+  void operator []=(int index, value) => !isNull
+      ? super[index] = value
+      : throw Exception('Cannot set value of a null List');
 
   @override
-  set length(int newLength) => !isNull ? super.length = newLength : throw Exception('Cannot set length of a null List');
+  set length(int newLength) => !isNull
+      ? super.length = newLength
+      : throw Exception('Cannot set length of a null List');
 }

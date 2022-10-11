@@ -66,7 +66,8 @@ abstract class PrimitieveJson<T> implements JsonType {
 }
 
 /// Adds `isNull` getter to all nullable primirives
-abstract class PrimitiveJsonNullable<T> extends PrimitieveJson<T?> implements JsonTypeNullable {
+abstract class PrimitiveJsonNullable<T> extends PrimitieveJson<T?>
+    implements JsonTypeNullable {
   @override
   bool get isNull => value == null;
 

@@ -46,7 +46,8 @@ void testListsAndMaps() {
       {'four': 4, 'five': 5, 'six': 6}
     ];
 
-    final jsonObj = JsonList<JsonMap<JsonInt>>(() => JsonMap<JsonInt>(JsonInt.new));
+    final jsonObj =
+        JsonList<JsonMap<JsonInt>>(() => JsonMap<JsonInt>(JsonInt.new));
     assert(jsonObj.setFromJson(initialJson));
     spectJsonNoChange(jsonObj, initialJson);
   });
@@ -57,7 +58,8 @@ void testListsAndMaps() {
       'two': [2, 2],
       'three': [3, 3, 3],
     };
-    final jsonObj = JsonMap<JsonList<JsonInt>>(() => JsonList<JsonInt>(JsonInt.new));
+    final jsonObj =
+        JsonMap<JsonList<JsonInt>>(() => JsonList<JsonInt>(JsonInt.new));
     assert(jsonObj.setFromJson(initialJson));
     spectJsonNoChange(jsonObj, initialJson);
   });

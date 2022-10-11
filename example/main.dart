@@ -24,7 +24,11 @@ void main(List<String> args) {
   assert(!user.address.isNull);
   assert(user.address.state.value == 'Some State');
 
-  faceGram.posts.add(Post({'title': 'Dart is awesome', 'content': 'Lorem ipsum ...', 'creator_email': user.email}));
+  faceGram.posts.add(Post({
+    'title': 'Dart is awesome',
+    'content': 'Lorem ipsum ...',
+    'creator_email': user.email
+  }));
   final post = faceGram.posts[0];
   assert(post.creator.value == 'tomas-123@facegram.com');
 
@@ -57,9 +61,11 @@ class SocialNetwork extends ModelBuilder {
 
   JsonList<Post> get posts => jsonList<Post>('posts', () => Post({}));
 
-  JsonMap<JsonInt> get likes => jsonMap<JsonInt>('likes_by_post_id', JsonInt.new);
+  JsonMap<JsonInt> get likes =>
+      jsonMap<JsonInt>('likes_by_post_id', JsonInt.new);
 
-  JsonMap<JsonList<Post>> get collections => jsonMap('collections', () => JsonList(() => Post({})));
+  JsonMap<JsonList<Post>> get collections =>
+      jsonMap('collections', () => JsonList(() => Post({})));
 }
 
 class Post extends ModelBuilder {
@@ -94,7 +100,8 @@ class User extends ModelBuilder {
 
 class Address extends ModelBuilderNullable {
   @override
-  Iterable<JsonType> get values => [street, number, street, city, state, country];
+  Iterable<JsonType> get values =>
+      [street, number, street, city, state, country];
 
   JsonString get street => jsonString('street');
 
