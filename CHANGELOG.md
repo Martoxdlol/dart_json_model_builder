@@ -8,7 +8,9 @@
 
 ## 1.0.0
 
-- Initial release.
+Previous version was more like a proof of concept. This version is more usable now.
+
+- **Initial good release**.
 - Remove concept of `field` (now is `entry`)
 - Change concept of `Model` to `JsonType` (now everything is a `JsonType` subclass)
 - Simplified and improved models and types system.
