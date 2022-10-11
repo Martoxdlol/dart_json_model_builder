@@ -3,7 +3,7 @@ import 'dart:collection';
 import 'package:json_model_builder/types.dart';
 
 /// JsonType list compatible to List
-class JsonList<T extends JsonType> extends ListBase implements JsonType {
+class JsonList<T extends JsonType> extends ListBase<T> implements JsonType {
   JsonList(this.childCreator);
 
   final T Function() childCreator;
@@ -15,12 +15,15 @@ class JsonList<T extends JsonType> extends ListBase implements JsonType {
     if (json is Iterable) {
       _list.clear();
       for (final value in json) {
-        _list.add(childCreator.call()..setFromJson(value));
+        _list.add(childCreator()..setFromJson(value));
       }
       return true;
     }
     return false;
   }
+
+  @override
+  void add(T element) => _list.add(element);
 
   @override
   toJson() => _list.map((e) => e.toJson()).toList();
@@ -29,10 +32,10 @@ class JsonList<T extends JsonType> extends ListBase implements JsonType {
   int get length => _list.length;
 
   @override
-  operator [](int index) => _list[index];
+  T operator [](int index) => _list[index];
 
   @override
-  void operator []=(int index, value) => _list[index] = value;
+  void operator []=(int index, T value) => _list[index] = value;
 
   @override
   set length(int newLength) => _list.length = newLength;

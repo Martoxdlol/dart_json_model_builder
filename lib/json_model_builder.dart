@@ -55,9 +55,11 @@ abstract class ModelBuilder implements JsonType {
   /// ```
   @override
   bool setFromJson(json) {
+    values.toList();
     if (json is Map) {
       for (final entry in json.entries) {
-        _entries[entry.key]?.setFromJson(json[entry.key]);
+        final value = json[entry.key] is JsonType ? (json[entry.key] as JsonType).toJson() : json[entry.key];
+        _entries[entry.key]?.setFromJson(value);
       }
       return true;
     }
@@ -66,10 +68,12 @@ abstract class ModelBuilder implements JsonType {
 
   @override
   toJson() {
+    values.toList();
     final Map map = {};
     for (final entry in _entries.entries) {
       map[entry.key] = entry.value.toJson();
     }
+    return map;
   }
 
   /// Add entry to json model. Entries are defined as getters
@@ -96,47 +100,55 @@ abstract class ModelBuilder implements JsonType {
   }
 
   /// Creates a entry of type `JsonString` with a given name
-  JsonString jsonString(String name, [String? defaultValue]) => addEntry<JsonString>(name, JsonString.new, defaultValue);
+  JsonString jsonString(String name, [String? defaultJsonValue]) => addEntry<JsonString>(name, JsonString.new, defaultJsonValue);
 
   /// Creates a entry of type `JsonStringNullable` with a given name
-  JsonStringNullable jsonStringNullable(String name, [String? defaultValue]) =>
-      addEntry<JsonStringNullable>(name, JsonStringNullable.new, defaultValue);
+  JsonStringNullable jsonStringNullable(String name, [String? defaultJsonValue]) =>
+      addEntry<JsonStringNullable>(name, JsonStringNullable.new, defaultJsonValue);
 
   /// Creates a entry of type `JsonInt` with a given name
-  JsonInt jsonInt(String name, [int? defaultValue]) => addEntry<JsonInt>(name, JsonInt.new, defaultValue);
+  JsonInt jsonInt(String name, [dynamic defaultJsonValue]) => addEntry<JsonInt>(name, JsonInt.new, defaultJsonValue);
 
   /// Creates a entry of type `JsonIntNullable` with a given name
-  JsonIntNullable jsonIntNullable(String name, [int? defaultValue]) => addEntry<JsonIntNullable>(name, JsonIntNullable.new, defaultValue);
+  JsonIntNullable jsonIntNullable(String name, [int? defaultJsonValue]) =>
+      addEntry<JsonIntNullable>(name, JsonIntNullable.new, defaultJsonValue);
 
   /// Creates a entry of type `JsonDouble` with a given name
-  JsonDouble jsonDouble(String name, [int? defaultValue]) => addEntry<JsonDouble>(name, JsonDouble.new, defaultValue);
+  JsonDouble jsonDouble(String name, [dynamic defaultJsonValue]) => addEntry<JsonDouble>(name, JsonDouble.new, defaultJsonValue);
 
   /// Creates a entry of type `JsonDoubleNullable` with a given name
-  JsonDoubleNullable jsonDoubleNullable(String name, [int? defaultValue]) =>
-      addEntry<JsonDoubleNullable>(name, JsonDoubleNullable.new, defaultValue);
+  JsonDoubleNullable jsonDoubleNullable(String name, [dynamic defaultJsonValue]) =>
+      addEntry<JsonDoubleNullable>(name, JsonDoubleNullable.new, defaultJsonValue);
 
   /// Creates a entry of type `JsonBool` with a given name
-  JsonBool jsonBool(String name, [int? defaultValue]) => addEntry<JsonBool>(name, JsonBool.new, defaultValue);
+  JsonBool jsonBool(String name, [dynamic defaultJsonValue]) => addEntry<JsonBool>(name, JsonBool.new, defaultJsonValue);
 
   /// Creates a entry of type `JsonBoolNullable` with a given name
-  JsonBoolNullable jsonBoolNullable(String name, [int? defaultValue]) =>
-      addEntry<JsonBoolNullable>(name, JsonBoolNullable.new, defaultValue);
+  JsonBoolNullable jsonBoolNullable(String name, [dynamic defaultJsonValue]) =>
+      addEntry<JsonBoolNullable>(name, JsonBoolNullable.new, defaultJsonValue);
+
+  /// Creates a entry of type `JsonDateTime` with a given name
+  JsonDateTime jsonDateTime(String name, [dynamic defaultJsonValue]) => addEntry<JsonDateTime>(name, JsonDateTime.new, defaultJsonValue);
+
+  /// Creates a entry of type `JsonDateTimeNullable` with a given name
+  JsonDateTimeNullable jsonDateTimeNullable(String name, [dynamic defaultJsonValue]) =>
+      addEntry<JsonDateTimeNullable>(name, JsonDateTimeNullable.new, defaultJsonValue);
 
   /// Creates a entry of type `JsonList` with a given name
-  JsonList jsonList<T extends JsonType>(String name, T Function() childCreator, [int? defaultValue]) =>
-      addEntry<JsonList>(name, () => JsonList(childCreator), defaultValue);
+  JsonList<T> jsonList<T extends JsonType>(String name, T Function() childCreator, [dynamic defaultJsonValue]) =>
+      addEntry<JsonList<T>>(name, () => JsonList(childCreator), defaultJsonValue);
 
   /// Creates a entry of type `JsonListNullable` with a given name
-  JsonListNullable jsonListNullable<T extends JsonType>(String name, T Function() childCreator, [int? defaultValue]) =>
-      addEntry<JsonListNullable>(name, () => JsonListNullable(childCreator), defaultValue);
+  JsonListNullable jsonListNullable<T extends JsonType>(String name, T Function() childCreator, [dynamic defaultJsonValue]) =>
+      addEntry<JsonListNullable>(name, () => JsonListNullable(childCreator), defaultJsonValue);
 
   /// Creates a entry of type `JsonMap` with a given name
-  JsonMap jsonMap<T extends JsonType>(String name, T Function() childCreator, [int? defaultValue]) =>
-      addEntry<JsonMap>(name, () => JsonMap(childCreator), defaultValue);
+  JsonMap<T> jsonMap<T extends JsonType>(String name, T Function() childCreator, [int? defaultJsonValue]) =>
+      addEntry<JsonMap<T>>(name, () => JsonMap(childCreator), defaultJsonValue);
 
   /// Creates a entry of type `JsonMapNullable` with a given name
-  JsonMapNullable jsonMapNullable<T extends JsonType>(String name, T Function() childCreator, [int? defaultValue]) =>
-      addEntry<JsonMapNullable>(name, () => JsonMapNullable(childCreator), defaultValue);
+  JsonMapNullable jsonMapNullable<T extends JsonType>(String name, T Function() childCreator, [dynamic defaultJsonValue]) =>
+      addEntry<JsonMapNullable>(name, () => JsonMapNullable(childCreator), defaultJsonValue);
 
   T jsonModel<T extends ModelBuilder>(String name, T Function() creator, [dynamic defaultJsonValue]) =>
       addEntry<T>(name, creator, defaultJsonValue);

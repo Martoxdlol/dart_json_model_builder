@@ -2,178 +2,137 @@
 
 This library provides a way to create modeles easily usable from code that can be serialized into/from JSON.
 
-Instead of directly using variables of the corresponding types we use 'fields'. 
-A 'field' has a type. 
+Instead of directly using variables of the corresponding types we use 'JsonType'. 
+A 'JsonType' can convert a given type from and to json. 
 
 ### Models
 
-Every class that must be json serializable from this library is a subclass of Model.
+Models are custom JsonTypes with custom entries and types.
 A model can
  - Be serialized to JSON
  - Be instanciated from parsed JSON
- - Have fields with a type of Model
- - Be able to correctly create it sub model fields from JSON
+ - Have entries with a type of Model
+ - Be able to correctly create it sub model entries from JSON
 
-If you have a Model that has some field with type of other model, this will work fine. 
+If you have a Model that has some entry with type of other model, this will work fine. 
 Instanciating the parent from json will also instanciate the child correctly.
 
 ## Example
 ```dart
-class Person extends ModelBuilder {
-  Person(super.json);
 
-  // IMPORTANT: you must put all your field here to ensure that it will work
+class SocialNetwork extends ModelBuilder {
   @override
-  Iterable<Field> get fields => [age, name, address, properties, numbersArray, otherHomes];
+  Iterable<JsonType> get values => [users, posts, likes];
 
-  StringField get name => stringField('name');
-  IntField get age => intField('age');
+  JsonList<User> get users => jsonList<User>('users', User.new);
 
-  ModelField<Address> get address => modelField('address'); // It will parse json to instance of Address 
+  JsonList<Post> get posts => jsonList<Post>('posts', () => Post({}));
 
-  ModelField<ModelMap> get properties => mapField('props'); // Equivalent to: Map<String, dynamic>
+  JsonMap<JsonInt> get likes => jsonMap<JsonInt>('likes_by_post_id', JsonInt.new);
 
-  ModelField<ModelList> get numbersArray => listField('numbers_array', type: int); //Equivalent to List<int>
-
-  ModelField<ModelMap> get otherHomes => mapField('homes', type: Address); // Equivalent to: Map<String, dynamic>
+  JsonMap<JsonList<Post>> get collections => jsonMap('collections', () => JsonList(() => Post({})));
 }
 
-class Address extends ModelBuilder {
-  Address(super.json);
+class Post extends ModelBuilder {
+  // Add this lines to instanciate from json source directly
+  Post(super.source);
 
   @override
-  Iterable<Field> get fields => [street, number, city, state, country];
+  Iterable<JsonType> get values => [id, title, content, creator];
 
-  StringField get street => stringField('street');
-  IntField get number => intField('number');
-  StringField get city => stringField('city');
-  StringField get state => stringField('state');
-  StringField get country => stringField('country');
+  // Functions passed as default value are called when instanciating the model
+  JsonInt get id => jsonInt('id', nextId);
+
+  JsonString get title => jsonString('title');
+
+  JsonString get content => jsonString('content');
+
+  JsonString get creator => jsonString('creator_email');
 }
 
-void main() {
-  // IMPORTANT: you must register Model types
-  Model.register('person', (json) => Person(json));
-  Model.register('address', (json) => Address(json));
+class User extends ModelBuilder {
+  @override
+  Iterable<JsonType> get values => [name, email, birthday, address];
 
-  // Can fill model from JSON
-  final me = Person({
+  JsonString get name => jsonString('name');
+
+  JsonString get email => jsonString('email');
+
+  JsonDateTime get birthday => jsonDateTime('birthday');
+
+  Address get address => jsonModel<Address>('address', Address.new);
+}
+
+class Address extends ModelBuilderNullable {
+  @override
+  Iterable<JsonType> get values => [street, number, street, city, state, country];
+
+  JsonString get street => jsonString('street');
+
+  JsonIntNullable get number => jsonIntNullable('number');
+
+  JsonString get zip => jsonString('zip_code');
+
+  JsonStringNullable get city => jsonStringNullable('city');
+
+  JsonString get state => jsonString('state');
+
+  JsonString get country => jsonString('country');
+}
+
+void main(List<String> args) {
+  final faceGram = SocialNetwork();
+
+  final user = User();
+  user.setFromJson({
     'name': 'Tomás',
-    'age': 20,
+    'email': 'tomas-123@facegram.com',
+    'birthday': '2020-04-05T00:00:00.000',
     'address': {
       'street': 'Some Street',
+      'number': 123,
+      'zip_code': '1000',
       'city': 'Some City',
-      'country': 'Dream Land',
+      'state': 'Some State',
+      'country': 'United Land'
     }
   });
 
-  // Can know if field is filled or not
-  if(!me.numbersArray.isLoaded) {
-      // Set property one by one
-      me.numbersArray.set([1, 2, 3, 4, '5', 'invalid, this will ve ignored' ]);
-  }
+  faceGram.users.add(user);
 
-  me.age.set(21);
+  assert(faceGram.users[0] == user);
+  assert(!user.address.isNull);
+  assert(user.address.state.value == 'Some State');
 
-  // Print single property
-  print('Name: ${me.name.value}');
+  faceGram.posts.add(Post({'title': 'Dart is awesome', 'content': 'Lorem ipsum ...', 'creator_email': user.email}));
+  final post = faceGram.posts[0];
+  assert(post.creator.value == 'tomas-123@facegram.com');
 
-  // Convert to json
-  print(me.toJson());
+  final y2020 = Post({
+    'title': JsonString()..setFromJson(2020),
+    'content': JsonString()..set('Year 2020, ...'),
+  });
 
-  // If using a 'ModelField<SomeType>', use current instead of value
-  // It will have the corresponding type 
-  // The value readed here was created from json as 'Address'
-  Address address = me.address.current;
+  y2020.creator.set(user.email.value);
+  y2020.title.value += ', the pandemic';
 
+  faceGram.posts.add(y2020);
+  assert(faceGram.posts[1].title.value == '2020, the pandemic');
+
+  faceGram.collections['code'] = JsonList<Post>(() => Post({}));
+
+  faceGram.collections['code']!.add(Post({'title': 'I HATE SOFTWARE'}));
+  faceGram.collections['code']!.add(Post({'title': 'I LOVE SOFTWARE'}));
+
+  faceGram.collections['history'] = JsonList<Post>(() => Post({}));
+
+  faceGram.collections['history']!.add(Post({'title': 'Year 2020 pandemic'}));
 }
-```
 
+int id = 0;
 
-## List
-To create a field with type list use
-```dart
-// List of int (cannot have any value type other than int)
-ListField get numbersArray => listField('numbers_array', type: int); 
+int nextId() => id++;
 
-// Can have any value type
-// ListField is equivalent to ModelField<ModelList>
-ModelField<ModelList> get things => listField('things_array'); 
-
-// Can have a model as type
-ListField get homes => listField('homes', type: Address); 
-
-
-// Read value
-int index = 3;
-someone.homes.current?[index]?.value
-someone.homes.current?.get(index)?.value
-
-// Weite value
-someone.homes.current?.add({ ... })
-someone.homes.current?.add(Address({ ... }))
-someone.homes.current?[1] = Address({ ... })
-someone.homes.current?[someone.homes.current.length] = { ... } // It will be converted from json to Address
-someone.homes.current?.set(2, Address({ ... }))
-someone.homes.current?.set(2, { ... })
-```
-
-## Map
-To create a field with type mape use
-```dart
-// List of int (cannot have any value type other than int)
-MapField get numbersArray => mapField('amounts', type: int); 
-
-// Can have any value type
-MapField get things => mapField('things'); 
-
-// Can have a model as type
-// MapField is equivalent to ModelField<ModelMap>
-ModelField<ModelMap> get homes => mapField('homes', type: Address); 
-
-
-// Read value
-someone.homes.current?['some_home_id']?.value
-someone.homes.current?.get('some_home_id')?.value
-
-// Weite value
-someone.homes.current?['some_home_id'] = Address({ ... })
-someone.homes.current?['some_home_id'] = { ... } // It will be converted from json to Address
-someone.homes.current?.set('some_home_id', Address({ ... }))
-someone.homes.current?.set('some_home_id', { ... })
-
-```
-
-## All types
-```dart
-class ModelUsingAllPosibleTypes extends ModelBuilder {
-  ModelUsingAllPosibleTypes(super.json);
-
-  @override
-  Iterable<Field> get fields => [date, integer, number, name, correct, arrayOfAny, numbers, friends, properties, scores, playersByName];
-
-  DateTimeField get date => dateTimeField('date');
-
-  IntField get integer => intField('integer');
-
-  DoubleField get number => doubleField('number');
-
-  StringField get name => stringField('name');
-
-  BoolField get correct => boolField('is_correct');
-
-  ListField get arrayOfAny => listField('things');
-
-  ListField get numbers => listField('numbers', type: double);
-
-  ListField get friends => listField('friends', type: Human);
-
-  MapField get properties => mapField('properties');
-
-  MapField get scores => mapField('scores', type: int);
-
-  MapField get playersByName => mapField('players', type: Human);
-}
 ```
 
 

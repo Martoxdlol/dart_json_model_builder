@@ -3,7 +3,7 @@ import 'package:json_model_builder/types.dart';
 class JsonInt extends PrimitieveJson<int> {
   @override
   dynamic toJson() {
-    return value;
+    return valueOrNull;
   }
 
   @override
@@ -15,7 +15,7 @@ class JsonInt extends PrimitieveJson<int> {
 class JsonIntNullable extends PrimitiveJsonNullable<int> {
   @override
   dynamic toJson() {
-    return value;
+    return valueOrNull;
   }
 
   @override
@@ -27,7 +27,7 @@ class JsonIntNullable extends PrimitiveJsonNullable<int> {
 class JsonDouble extends PrimitieveJson<double> {
   @override
   dynamic toJson() {
-    return value;
+    return valueOrNull;
   }
 
   @override
@@ -39,7 +39,7 @@ class JsonDouble extends PrimitieveJson<double> {
 class JsonDoubleNullable extends PrimitiveJsonNullable<double> {
   @override
   dynamic toJson() {
-    return value;
+    return valueOrNull;
   }
 
   @override
@@ -51,7 +51,7 @@ class JsonDoubleNullable extends PrimitiveJsonNullable<double> {
 class JsonString extends PrimitieveJson<String> {
   @override
   dynamic toJson() {
-    return value;
+    return valueOrNull;
   }
 
   @override
@@ -63,7 +63,7 @@ class JsonString extends PrimitieveJson<String> {
 class JsonStringNullable extends PrimitiveJsonNullable<String> {
   @override
   dynamic toJson() {
-    return value;
+    return valueOrNull;
   }
 
   @override
@@ -75,7 +75,7 @@ class JsonStringNullable extends PrimitiveJsonNullable<String> {
 class JsonBool extends PrimitieveJson<bool> {
   @override
   dynamic toJson() {
-    return value;
+    return valueOrNull;
   }
 
   @override
@@ -89,7 +89,7 @@ class JsonBool extends PrimitieveJson<bool> {
 class JsonBoolNullable extends PrimitiveJsonNullable<bool> {
   @override
   dynamic toJson() {
-    return value;
+    return valueOrNull;
   }
 
   @override
@@ -109,7 +109,7 @@ DateTime? _tryParseDateTime(source) {
 class JsonDateTime extends PrimitieveJson<DateTime> {
   @override
   dynamic toJson() {
-    return value.toIso8601String();
+    return valueOrNull?.toIso8601String();
   }
 
   @override
@@ -121,7 +121,7 @@ class JsonDateTime extends PrimitieveJson<DateTime> {
 class JsonDateTimeNullable extends PrimitiveJsonNullable<DateTime> {
   @override
   dynamic toJson() {
-    return value;
+    return valueOrNull;
   }
 
   @override
