@@ -6,6 +6,12 @@ import 'package:json_model_builder/types.dart';
 class JsonList<T extends JsonType> extends ListBase<T> implements JsonType {
   JsonList(this.childCreator);
 
+  /// This enables list to instanciate elements with given type when setting from JSON
+  ///
+  /// Example:
+  /// ```dart
+  /// JsonList<SomeModel>(SomeModel.new)..setFromJson([SomeModel(...),SomeModel(...)])
+  /// ```
   final T Function() childCreator;
 
   final List<T> _list = <T>[];
@@ -49,8 +55,11 @@ class JsonListNullable<T extends JsonType> extends JsonList<T>
   bool _isNull = true;
 
   @override
+
+  /// get if list is currently marked as null. (toJson will convert to null).
   bool get isNull => _isNull;
 
+  /// Setting isNull to `true` will clear the list
   set isNull(bool isNull) {
     if (isNull) _list.clear();
     _isNull = isNull;

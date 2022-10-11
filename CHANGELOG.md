@@ -23,3 +23,7 @@ Previous version was more like a proof of concept. This version is more usable n
 ## 1.0.2
 
 - Formatted files
+
+## 1.0.3
+
+- Curly braces

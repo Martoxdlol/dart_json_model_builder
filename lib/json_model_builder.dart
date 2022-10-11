@@ -95,8 +95,9 @@ abstract class ModelBuilder implements JsonType {
   /// ```
   T addEntry<T extends JsonType>(String name, T Function() creator,
       [dynamic defaultJsonValue]) {
-    if (defaultJsonValue is Function)
+    if (defaultJsonValue is Function) {
       defaultJsonValue = defaultJsonValue.call();
+    }
     if (_entries[name] == null) {
       _entries[name] = creator()..setFromJson(defaultJsonValue);
     }
