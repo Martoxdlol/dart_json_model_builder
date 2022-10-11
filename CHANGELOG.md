@@ -15,3 +15,7 @@ Previous version was more like a proof of concept. This version is more usable n
 - Change concept of `Model` to `JsonType` (now everything is a `JsonType` subclass)
 - Simplified and improved models and types system.
 - Remove need for registering models
+
+## 1.0.1
+
+- Changed documentation url

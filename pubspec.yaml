@@ -3,7 +3,7 @@ description: Create model as classes that can be serialized from/to JSON. It sup
 version: 1.0.0
 homepage: https://github.com/Martoxdlol/dart_json_model_builder
 repository: https://github.com/Martoxdlol/dart_json_model_builder
-documentation: https://github.com/Martoxdlol/dart_json_model_builder/blob/master/README.md
+documentation: https://github.com/Martoxdlol/dart_json_model_builder/blob/v1/README.md
 
 platforms:
   android:
