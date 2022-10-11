@@ -1,3 +1,8 @@
+/// Basic interface that all types must have. All other json types implement this.
+///
+/// You can use this class to create yout own type.
+///
+/// It need to be able to be setted from json and converted to json
 abstract class JsonType {
   /// Convert object to json compatible types
   dynamic toJson();
@@ -6,6 +11,7 @@ abstract class JsonType {
   bool setFromJson(dynamic json);
 }
 
+/// It adds a `isNull` flag, so you can define model entries as nullables or values as null.
 abstract class JsonTypeNullable {
   /// Returns whether or not current type value is null.
   /// Example:
@@ -23,6 +29,8 @@ abstract class JsonTypeNullable {
 /// Non-Primirives: `List, Map, Model`
 abstract class PrimitieveJson<T> implements JsonType {
   T? _value;
+
+  /// Returns if value is set. If is not setted and you call `value` getter it will throw a exception.
   bool get isSet => _value != null;
 
   /// Set current primitive value of type [T]
@@ -63,6 +71,16 @@ abstract class PrimitieveJson<T> implements JsonType {
       return false;
     }
   }
+
+  @override
+  operator ==(other) {
+    if (other is PrimitieveJson) return other._value == _value;
+    if (other is PrimitiveJsonNullable) return other._value == _value;
+    return false;
+  }
+
+  @override
+  int get hashCode => _value.hashCode;
 }
 
 /// Adds `isNull` getter to all nullable primirives
@@ -77,4 +95,14 @@ abstract class PrimitiveJsonNullable<T> extends PrimitieveJson<T?>
     if (_value is T && _value != null) return _value!;
     return null;
   }
+
+  @override
+  operator ==(other) {
+    if (other is PrimitieveJson) return other._value == _value;
+    if (other is PrimitiveJsonNullable) return other._value == _value;
+    return false;
+  }
+
+  @override
+  int get hashCode => _value.hashCode;
 }

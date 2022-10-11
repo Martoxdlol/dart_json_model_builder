@@ -27,3 +27,8 @@ Previous version was more like a proof of concept. This version is more usable n
 ## 1.0.3
 
 - Curly braces
+
+## 1.0.4
+
+- More code documentation
+- Added `hashCode` and `==` operator for primitives
