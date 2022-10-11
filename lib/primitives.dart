@@ -12,7 +12,7 @@ class JsonInt extends PrimitieveJson<int> {
   }
 }
 
-class JsonIntNullable extends PrimitiveJsonNullable<int?> {
+class JsonIntNullable extends PrimitiveJsonNullable<int> {
   @override
   dynamic toJson() {
     return value;
@@ -36,7 +36,7 @@ class JsonDouble extends PrimitieveJson<double> {
   }
 }
 
-class JsonDoubleNullable extends PrimitiveJsonNullable<double?> {
+class JsonDoubleNullable extends PrimitiveJsonNullable<double> {
   @override
   dynamic toJson() {
     return value;
@@ -60,7 +60,7 @@ class JsonString extends PrimitieveJson<String> {
   }
 }
 
-class JsonStringNullable extends PrimitiveJsonNullable<String?> {
+class JsonStringNullable extends PrimitiveJsonNullable<String> {
   @override
   dynamic toJson() {
     return value;
@@ -86,7 +86,7 @@ class JsonBool extends PrimitieveJson<bool> {
   }
 }
 
-class JsonBoolNullable extends PrimitiveJsonNullable<bool?> {
+class JsonBoolNullable extends PrimitiveJsonNullable<bool> {
   @override
   dynamic toJson() {
     return value;
@@ -109,7 +109,7 @@ DateTime? _tryParseDateTime(source) {
 class JsonDateTime extends PrimitieveJson<DateTime> {
   @override
   dynamic toJson() {
-    return value;
+    return value.toIso8601String();
   }
 
   @override
@@ -118,7 +118,7 @@ class JsonDateTime extends PrimitieveJson<DateTime> {
   }
 }
 
-class JsonDateTimeNullable extends PrimitiveJsonNullable<DateTime?> {
+class JsonDateTimeNullable extends PrimitiveJsonNullable<DateTime> {
   @override
   dynamic toJson() {
     return value;

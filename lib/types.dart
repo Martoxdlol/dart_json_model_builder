@@ -23,23 +23,21 @@ abstract class JsonTypeNullable {
 /// Non-Primirives: `List, Map, Model`
 abstract class PrimitieveJson<T> implements JsonType {
   T? _value;
-  bool isSet = false;
+  bool get isSet => _value != null;
 
   /// Set current primitive value of type [T]
   void set(T value) {
     _value = value;
-    isSet = true;
   }
 
   /// delete current value and set it to null
   void delete() {
-    isSet = false;
     _value = null;
   }
 
   /// Return current primitive value of type [T]
   T get value {
-    if (_value is T) return _value!;
+    if (_value is T && _value != null) return _value!;
     throw Exception('Value of type ${T.toString()} is not set');
   }
 
@@ -49,10 +47,7 @@ abstract class PrimitieveJson<T> implements JsonType {
   }
 
   /// Returns its value or null if it is not defined yet
-  T? get valueOrNull {
-    if (_value is T) return _value!;
-    return null;
-  }
+  T? get valueOrNull => _value;
 
   /// Try to convert to value from any given json
   T? tryParse(dynamic source);
@@ -64,13 +59,21 @@ abstract class PrimitieveJson<T> implements JsonType {
       set(parsed);
       return true;
     } else {
+      _value = null;
       return false;
     }
   }
 }
 
 /// Adds `isNull` getter to all nullable primirives
-abstract class PrimitiveJsonNullable<T> extends PrimitieveJson<T> implements JsonTypeNullable {
+abstract class PrimitiveJsonNullable<T> extends PrimitieveJson<T?> implements JsonTypeNullable {
   @override
   bool get isNull => value == null;
+
+  /// Return current primitive value of type [T] or null
+  @override
+  T? get value {
+    if (_value is T && _value != null) return _value!;
+    return null;
+  }
 }
