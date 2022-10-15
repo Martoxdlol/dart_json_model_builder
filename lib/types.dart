@@ -62,7 +62,13 @@ abstract class PrimitieveJson<T> implements JsonType {
 
   @override
   bool setFromJson(json) {
-    final parsed = tryParse(json);
+    if (json is PrimitieveJson &&
+        json.valueOrNull is T &&
+        json.valueOrNull != null) {
+      set(json.valueOrNull);
+      return true;
+    }
+    final parsed = tryParse(json is JsonType ? json.toJson() : json);
     if (parsed is T) {
       set(parsed);
       return true;

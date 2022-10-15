@@ -56,14 +56,18 @@ abstract class ModelBuilder implements JsonType {
   @override
   bool setFromJson(json) {
     values.toList();
+    if (json is ModelBuilder) {
+      return setFromJson(Map.fromEntries(json.entries));
+    }
     if (json is Map) {
       for (final entry in json.entries) {
-        final value = json[entry.key] is JsonType
-            ? (json[entry.key] as JsonType).toJson()
-            : json[entry.key];
+        final value = json[entry.key];
         _entries[entry.key]?.setFromJson(value);
       }
       return true;
+    }
+    if (json is JsonType) {
+      setFromJson(json.toJson());
     }
     return false;
   }

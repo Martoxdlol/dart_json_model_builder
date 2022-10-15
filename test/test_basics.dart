@@ -100,4 +100,24 @@ void testBasics() {
     expect(time.setFromJson('invalid'), false);
     expect(time.valueOrNull, null);
   });
+
+  test('primitive from primitive instance', () {
+    final num = JsonInt();
+
+    expect(num.isSet, false);
+
+    num.setFromJson(JsonInt()..set(10));
+    expect(num.isSet, true);
+    expect(10, num.value);
+  });
+
+  test('primitive from primitive instance of other JsonType', () {
+    final num = JsonInt();
+
+    expect(num.isSet, false);
+
+    num.setFromJson(JsonString()..set("10"));
+    expect(num.isSet, true);
+    expect(10, num.value);
+  });
 }

@@ -21,7 +21,13 @@ class JsonList<T extends JsonType> extends ListBase<T> implements JsonType {
     if (json is Iterable) {
       _list.clear();
       for (final value in json) {
-        _list.add(childCreator()..setFromJson(value));
+        if (value is T) {
+          _list.add(value);
+        } else if (value is JsonType) {
+          _list.add(childCreator()..setFromJson(value.toJson()));
+        } else {
+          _list.add(childCreator()..setFromJson(value));
+        }
       }
       return true;
     }

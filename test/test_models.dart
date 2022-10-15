@@ -1,5 +1,6 @@
 // ignore_for_file: unused_shown_name
 
+import 'package:json_model_builder/json_model_builder.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 
@@ -60,4 +61,38 @@ void testModels() {
 
     spectJsonNoChange(user.address, addressJson);
   });
+
+  test('list items from intance', () {
+    final addr1 = Address()
+      ..setFromJson({
+        'street': 'Some Street',
+        'number': 123,
+        'zip_code': '1000',
+        'city': 'Some City',
+        'state': 'Some State',
+        'country': 'United Land'
+      });
+
+    final addr2 = Address()
+      ..setFromJson({
+        'street': 'Some Street 2',
+        'number': 2123,
+        'zip_code': '2000',
+        'city': 'Some City 2',
+        'state': 'Some State 2',
+        'country': 'United Land 2'
+      });
+
+    final model = ModelWithAList()..addresses.setFromJson([addr1, addr2]);
+
+    expect(model.toJson()['adresses'][0]['number'], 123);
+    expect(model.toJson()['adresses'][1]['number'], 2123);
+  });
+}
+
+class ModelWithAList extends ModelBuilder {
+  @override
+  Iterable<JsonType> get values => [addresses];
+
+  JsonList<Address> get addresses => jsonList('adresses', Address.new);
 }

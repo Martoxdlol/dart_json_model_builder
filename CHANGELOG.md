@@ -32,3 +32,7 @@ Previous version was more like a proof of concept. This version is more usable n
 
 - More code documentation
 - Added `hashCode` and `==` operator for primitives
+
+## 1.0.5
+
+- Fixed bug that fails to setFromJson using a instanced JsonType using JsonList
