@@ -36,3 +36,7 @@ Previous version was more like a proof of concept. This version is more usable n
 ## 1.0.5
 
 - Fixed bug that fails to setFromJson using a instanced JsonType using JsonList
+
+## 1.0.6
+
+- Added `JsonNullable`, can be used in models to define nullable model entries

@@ -1,4 +1,5 @@
 import 'package:json_model_builder/json_model_builder.dart';
+import 'package:json_model_builder/nullable.dart';
 
 void main(List<String> args) {
   final faceGram = SocialNetwork();
@@ -19,6 +20,8 @@ void main(List<String> args) {
   });
 
   faceGram.users.add(user);
+
+  assert(user.secondaryAdress.isNull);
 
   assert(faceGram.users[0] == user);
   assert(!user.address.isNull);
@@ -96,6 +99,9 @@ class User extends ModelBuilder {
   JsonDateTime get birthday => jsonDateTime('birthday');
 
   Address get address => jsonModel<Address>('address', Address.new);
+
+  JsonNullable<Address> get secondaryAdress =>
+      jsonNullable('secondary_address', Address.new);
 }
 
 class Address extends ModelBuilderNullable {
