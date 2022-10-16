@@ -1,6 +1,7 @@
 import 'package:json_model_builder/json_model_builder.dart';
 
-class JsonNullable<T extends JsonType> extends JsonType implements JsonTypeNullable {
+class JsonNullable<T extends JsonType> extends JsonType
+    implements JsonTypeNullable {
   T Function() childCreator;
   JsonNullable(this.childCreator);
   T? current;
@@ -10,6 +11,10 @@ class JsonNullable<T extends JsonType> extends JsonType implements JsonTypeNulla
 
   @override
   bool setFromJson(json) {
+    if (json == null) {
+      current = null;
+      return true;
+    }
     if (json is T) {
       current = json;
       return true;

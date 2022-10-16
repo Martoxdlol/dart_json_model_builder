@@ -1,6 +1,7 @@
 // ignore_for_file: unused_shown_name
 
 import 'package:json_model_builder/json_model_builder.dart';
+import 'package:json_model_builder/nullable.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 
@@ -88,6 +89,18 @@ void testModels() {
     expect(model.toJson()['adresses'][0]['number'], 123);
     expect(model.toJson()['adresses'][1]['number'], 2123);
   });
+
+  test('Nullable model entry', () {
+    final model = ModelWithNullable();
+    expect(model.nullableAddress.isNull, true);
+    expect(model.nullableAddress.current, null);
+    model.nullableAddress.set(Address()..setFromJson({'street': 'something'}));
+    expect(model.nullableAddress.isNull, false);
+    expect(model.nullableAddress.current is Address, true);
+    model.nullableAddress.set(null);
+    expect(model.nullableAddress.isNull, true);
+    expect(model.nullableAddress.current, null);
+  });
 }
 
 class ModelWithAList extends ModelBuilder {
@@ -95,4 +108,12 @@ class ModelWithAList extends ModelBuilder {
   Iterable<JsonType> get values => [addresses];
 
   JsonList<Address> get addresses => jsonList('adresses', Address.new);
+}
+
+class ModelWithNullable extends ModelBuilder {
+  @override
+  Iterable<JsonType> get values => [nullableAddress];
+
+  JsonNullable<Address> get nullableAddress =>
+      jsonNullable('addr', Address.new);
 }
